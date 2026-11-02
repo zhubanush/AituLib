@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AuraLib — A1 poster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* A1 portrait, 594 x 841 mm. All sizes in mm so print and screen match. */
+@page{size:594mm 841mm;margin:0}
+:root{--navy:#1F3A5F;--amber:#D9982F;--bg:#F3F5F7;--card:#fff;--ink:#14202E;--muted:#58646F;--line:#D3D9DF;--teal:#2F6F73;--ok:#2E7D4F;--bad:#B23A3A;--grey:#C5CBD2}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{width:594mm;height:841mm;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Familjen Grotesk',system-ui,sans-serif;font-size:6.2mm;line-height:1.38;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{padding:18mm 22mm;display:grid;grid-template-rows:auto auto auto auto auto auto;gap:8mm;height:841mm}
+h2{font-size:11.5mm;line-height:1.05;margin:0 0 4mm;letter-spacing:-.02em;font-weight:700}
+h2 .n{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:6mm;font-weight:500;color:#fff;background:var(--navy);border-radius:2mm;padding:1mm 2.6mm;vertical-align:middle;margin-right:3mm;position:relative;top:-1.4mm}
+h3{font-size:7mm;margin:0 0 2mm;font-weight:600}
+p{margin:0 0 3mm}
+.muted{color:var(--muted)}
+.mono{font-family:'IBM Plex Mono',monospace}
+.card{background:var(--card);border:.5mm solid var(--line);border-radius:4mm;padding:6.5mm 8mm}
+/* header */
+header{background:var(--navy);color:#fff;border-radius:6mm;padding:11mm 14mm;display:grid;grid-template-columns:1fr 104mm;gap:14mm;align-items:center}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:5.6mm;letter-spacing:.08em;opacity:.8;text-transform:uppercase}
+.title{display:flex;align-items:center;gap:8mm;margin:3mm 0 2mm}
+.logo{display:grid;grid-template-columns:1fr 1fr;gap:2.4mm;width:30mm;height:30mm}
+.logo i{background:#fff;border-radius:1mm}.logo i:nth-child(2){opacity:.7}.logo i:nth-child(3){opacity:.45}.logo i:nth-child(4){opacity:.25}
+h1{font-size:46mm;line-height:.9;margin:0;letter-spacing:-.035em;font-weight:700}
+.tag{font-size:11mm;line-height:1.15;margin:4mm 0 6mm;max-width:340mm;font-weight:500}
+.tag b{color:var(--amber);font-weight:600}
+.team{font-size:6.6mm;opacity:.9}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:4mm;margin-top:8mm}
+.stat{border-top:.6mm solid rgba(255,255,255,.35);padding-top:3mm}
+.stat b{display:block;font-size:12mm;line-height:1;font-weight:700}
+.stat span{font-size:4.8mm;opacity:.85;line-height:1.2;display:block;margin-top:1.4mm}
+.qr{background:#fff;border-radius:4mm;padding:7mm;color:var(--ink);text-align:center}
+.qr #qr svg{width:100%;height:auto;display:block}
+.qr strong{display:block;font-size:6.6mm;margin-top:4mm}
+.qr .mono{font-size:4.4mm;color:var(--muted);word-break:break-all}
+/* rows */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10mm}
+.row3{display:grid;grid-template-columns:1.05fr 1fr;gap:10mm}
+.row4{display:grid;grid-template-columns:1.45fr 1fr;gap:10mm}
+.datagrid{display:grid;grid-template-columns:1.35fr 1fr;gap:7mm;align-items:start}
+.datagrid .find{font-size:5.6mm}
+ul.pains{list-style:none;margin:0;padding:0}
+ul.pains li{padding:2.6mm 0 2.6mm 9mm;border-top:.4mm solid var(--line);position:relative}
+ul.pains li:first-child{border-top:0}
+ul.pains li::before{content:"";position:absolute;left:0;top:4.6mm;width:4mm;height:4mm;border-radius:1mm;background:var(--bad);opacity:.85}
+ul.pains.good li::before{background:var(--ok)}
+ul.pains b{font-weight:600}
+/* screenshots */
+.shots{display:grid;grid-template-columns:1fr 112mm;gap:10mm;align-items:start}
+.shot{background:#fff;border:.5mm solid var(--line);border-radius:4mm;overflow:hidden;position:relative}
+.shot img{display:block;width:100%}
+.shot.desk{height:158mm}.shot.desk img{height:100%;object-fit:cover;object-position:left 82%}
+.shot.phone{height:158mm;border-radius:8mm;border:2mm solid var(--ink)}.shot.phone img{height:100%;object-fit:cover;object-position:top}
+.cap{position:absolute;left:5mm;bottom:5mm;background:var(--navy);color:#fff;font-size:5.2mm;padding:2mm 4mm;border-radius:2mm;max-width:90%}
+.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm 6mm;margin-top:1mm}
+.feat div{font-size:5.4mm;line-height:1.25;padding-left:5mm;border-left:1mm solid var(--amber)}
+.feat b{display:block;font-size:5.8mm}
+/* diagrams */
+svg text{font-family:'Familjen Grotesk',system-ui,sans-serif}
+.formula{font-family:'Source Serif 4',Georgia,serif;font-size:6.4mm;background:var(--bg);border-radius:2.5mm;padding:4mm 5mm;margin:2mm 0 4mm}
+table{width:100%;border-collapse:collapse;font-size:5.4mm}
+th{text-align:left;color:var(--muted);font-weight:500;padding:1.8mm 2mm;border-bottom:.5mm solid var(--line)}
+td{padding:2mm;border-bottom:.4mm solid var(--line);vertical-align:top}
+td b{font-weight:600}
+.pill{display:inline-block;font-size:4.6mm;padding:.4mm 2.4mm;border-radius:10mm;background:#E3F1E8;color:var(--ok);font-weight:600;white-space:nowrap}
+.find{border-left:1.2mm solid var(--navy);padding:1mm 0 1mm 5mm;margin:3mm 0}
+.find.dec{border-left-color:var(--amber)}
+.find b{font-weight:600}
+footer{display:flex;justify-content:space-between;align-items:center;font-size:5.2mm;color:var(--muted);border-top:.5mm solid var(--line);padding-top:4mm}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div>
+    <div class="kicker">Astana IT University · Group IOT-2603 · 2026</div>
+    <div class="title"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span><h1>AuraLib</h1></div>
+    <div class="tag">A smart university library: <b>find</b> a book and walk to its shelf, <b>book</b> a study room, <b>borrow</b> at self-checkout, and <b>read more</b> with friends.</div>
+    <div class="team">Team: Zhubanysh · Sultan</div>
+    <div class="stats">
+      <div class="stat"><b>500</b><span>titles on a 3-floor map</span></div>
+      <div class="stat"><b>10</b><span>screens in the app</span></div>
+      <div class="stat"><b>9</b><span>database tables, all with access rules</span></div>
+      <div class="stat"><b>13</b><span>server functions enforce the rules</span></div>
+      <div class="stat"><b>20/20</b><span>tests passed on the live database</span></div>
+      <div class="stat"><b>3</b><span>languages: KZ · RU · EN</span></div>
+    </div>
+  </div>
+  <div class="qr"><div id="qr"></div><strong>Try the live prototype</strong><span class="mono">zhubanush.github.io/AituLib</span></div>
+</header>
+
+<div class="row2">
+  <div class="card">
+    <h2><span class="n">01</span>The problem</h2>
+    <ul class="pains">
+      <li><b>Where is the book?</b> The catalogue gives a call number, not the shelf. Students walk the floors or queue at the desk.</li>
+      <li><b>Who has the room?</b> Study rooms are booked on paper and in chats; the same hour is promised twice.</li>
+      <li><b>When is it back?</b> Every loan goes through the desk, and nobody knows when a popular book returns.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2><span class="n">02</span>Our solution</h2>
+    <ul class="pains good">
+      <li><b>Search + floor map:</b> the route from the entrance to the exact aisle and shelf.</li>
+      <li><b>Live room booking:</b> everyone sees the same grid; the database makes double booking impossible.</li>
+      <li><b>Self-checkout + hold queue:</b> scan a QR code, borrow for 21 days; the next reader is notified on return.</li>
+    </ul>
+  </div>
+</div>
+
+<div>
+  <div class="shots">
+    <div class="shot desk"><img src="img/find.png" alt="Find a book screen with the floor plan"><span class="cap">Find a book: aisle 14 lit up, dashed route from the entrance</span></div>
+    <div class="shot phone"><img src="img/phone-checkout.png" alt="Self-checkout on a phone"><span class="cap">Self-checkout on a phone</span></div>
+  </div>
+  <div class="feat" style="margin-top:5mm">
+    <div><b>Reviews &amp; ratings</b>only readers who borrowed a book</div>
+    <div><b>Reading challenge</b>monthly leaderboard, teams, 9 badges</div>
+    <div><b>Book club</b>vote for next week's book, discuss</div>
+    <div><b>Installable PWA</b>catalogue and map work offline</div>
+  </div>
+</div>
+
+<div class="row3">
+  <div class="card">
+    <h2><span class="n">03</span>How it works</h2>
+    <svg viewBox="0 0 600 300" width="100%" role="img" aria-label="AuraLib architecture">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#58646F"/></marker></defs>
+      <rect x="0" y="0" width="240" height="56" rx="8" fill="#fff" stroke="#D3D9DF" stroke-width="2"/>
+      <text x="16" y="24" font-size="17" font-weight="600" fill="#14202E">GitHub Pages</text><text x="16" y="44" font-size="13.5" fill="#58646F">hosts the static site, free</text>
+      <path d="M120 56V92" stroke="#58646F" stroke-width="2" marker-end="url(#ar)"/>
+      <rect x="0" y="96" width="240" height="196" rx="10" fill="#F3F5F7" stroke="#D3D9DF" stroke-width="2"/>
+      <text x="16" y="122" font-size="17" font-weight="600" fill="#14202E">Browser / phone</text>
+      <text x="16" y="150" font-size="14" fill="#14202E">• 10 screens, HTML + JS</text>
+      <text x="16" y="174" font-size="14" fill="#14202E">• store.js: all data calls</text>
+      <text x="16" y="198" font-size="14" fill="#14202E">• QR camera scanner</text>
+      <text x="16" y="222" font-size="14" fill="#14202E">• service worker (offline)</text>
+      <text x="16" y="246" font-size="14" fill="#14202E">• EN / RU / KZ, light / dark</text>
+      <path d="M244 150H352" stroke="#58646F" stroke-width="2" marker-end="url(#ar)"/>
+      <text x="298" y="140" font-size="13" text-anchor="middle" fill="#58646F">HTTPS + token</text>
+      <path d="M352 240H244" stroke="#58646F" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#ar)"/>
+      <text x="298" y="230" font-size="13" text-anchor="middle" fill="#58646F">live updates</text>
+      <rect x="356" y="0" width="244" height="292" rx="10" fill="#F3F5F7" stroke="#D3D9DF" stroke-width="2"/>
+      <text x="372" y="26" font-size="17" font-weight="600" fill="#14202E">Supabase (cloud)</text>
+      <rect x="370" y="40" width="216" height="52" rx="8" fill="#fff" stroke="#D3D9DF" stroke-width="2"/><text x="384" y="62" font-size="15" font-weight="600" fill="#14202E">Auth</text><text x="384" y="81" font-size="12.5" fill="#58646F">bcrypt passwords, sessions</text>
+      <rect x="370" y="102" width="216" height="52" rx="8" fill="#fff" stroke="#D3D9DF" stroke-width="2"/><text x="384" y="124" font-size="15" font-weight="600" fill="#14202E">PostgreSQL, 9 tables</text><text x="384" y="143" font-size="12.5" fill="#58646F">row level security on each</text>
+      <rect x="370" y="164" width="216" height="52" rx="8" fill="#E6EDF6" stroke="#1F3A5F" stroke-width="3"/><text x="384" y="186" font-size="15" font-weight="600" fill="#14202E">13 server functions</text><text x="384" y="205" font-size="12.5" fill="#14202E">borrow, return, book_room…</text>
+      <rect x="370" y="226" width="216" height="52" rx="8" fill="#fff" stroke="#D3D9DF" stroke-width="2"/><text x="384" y="248" font-size="15" font-weight="600" fill="#14202E">Realtime</text><text x="384" y="267" font-size="12.5" fill="#58646F">room grid, hold-ready alerts</text>
+    </svg>
+    <p class="muted" style="margin:4mm 0 0;font-size:5.4mm">Every library rule runs on the server: two clicks on the same room-hour hit a unique constraint, so only one wins.</p>
+  </div>
+  <div class="card">
+    <h2><span class="n">04</span>Smart planner</h2>
+    <p style="font-size:5.6mm">Input: group size, hours, day, time of day, equipment + live bookings. Every free room-hour is scored:</p>
+    <div class="formula">score = 100 − 5·(seats − people) − 4·busy rooms/h + 15·match − 20·missing ± 10·time</div>
+    <table>
+      <thead><tr><th>Input</th><th>Output</th></tr></thead>
+      <tbody>
+        <tr><td>1 person, 2 h, Silent</td><td><b>Quiet pod 2.A</b> — silent, right size</td></tr>
+        <tr><td>6 people, 2 h, Screen</td><td><b>Room 3.05</b> — only room for 8</td></tr>
+        <tr><td>10 people</td><td>Warning: split the group</td></tr>
+        <tr><td>3 h, 2 h already booked</td><td>Warning: 1 h left today</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin:4mm 0 0;font-size:5.2mm">Challenge points = 10 × books returned + 5 × different genres, each book once a month, max 3 a day.</p>
+  </div>
+</div>
+
+<div class="row4">
+  <div class="card">
+    <h2><span class="n">05</span>Data: what students borrow</h2>
+    <div class="datagrid">
+      <svg id="chart" viewBox="0 0 600 430" width="100%" role="img" aria-label="Share of copies on loan by subject"></svg>
+      <div>
+        <div class="find" style="margin-top:0"><b>Finding 1.</b> Psychology, CS and Economics have 36–43% of copies out, over twice Science (15%).</div>
+        <div class="find"><b>Finding 2.</b> These 3 subjects hold <span id="f2a"></span> of the copies but <span id="f2b"></span> of the loans.</div>
+        <div class="find dec"><b>Decision.</b> Buy extra copies for Psychology and CS first; do not expand Science or Design this semester.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="n">06</span>Security</h2>
+    <table>
+      <thead><tr><th>Risk</th><th>What we did</th></tr></thead>
+      <tbody>
+        <tr><td><b>Exposed passwords</b><br><span class="muted">hashes in the browser (A3)</span></td><td>Supabase Auth: bcrypt on the server, only a session token in the browser <span class="pill">done</span></td></tr>
+        <tr><td><b>Broken access</b><br><span class="muted">reading others' loans</span></td><td>Row level security on all 9 tables; changes only via checked functions <span class="pill">done</span></td></tr>
+        <tr><td><b>XSS</b><br><span class="muted">script in a review</span></td><td>All user text escaped <span class="pill">done</span> · Content Security Policy next</td></tr>
+        <tr><td><b>Fake accounts</b><br><span class="muted">farming points</span></td><td>Rate limits, 3 books/day cap <span class="pill">done</span> · University SSO next</td></tr>
+      </tbody>
+    </table>
+    <p class="muted" style="margin:4mm 0 0;font-size:5.2mm">Next: catalogue in the database, librarian role, push alerts, a one-semester pilot on one library floor.</p>
+  </div>
+</div>
+
+<footer><span>Prototype: <b class="mono" style="color:var(--ink)">zhubanush.github.io/AituLib</b> · Code + database: <b class="mono" style="color:var(--ink)">github.com/zhubanush/AituLib</b></span><span>Catalogue availability before launch is simulated sample data.</span></footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+// QR code to the live site
+(function(){var q=qrcode(0,'M');q.addData('https://zhubanush.github.io/AituLib/');q.make();document.getElementById('qr').innerHTML=q.createSvgTag({cellSize:8,margin:0,scalable:true})})();
+// Chart: share of copies on loan per subject, computed from the catalogue counts (Insights screen, 2 Nov 2026)
+(function(){
+  var rows=[['Psychology',44,102],['Computer science',91,248],['Economics',50,137],['Philosophy & History',31,142],['Physics',17,87],['Literature',49,255],['Poetry',16,85],['Central Asia',12,72],['Design',13,80],['Mathematics',15,94],['Science',19,128]];
+  var pct=function(r){return Math.round(r[1]/r[2]*100)};
+  rows.sort(function(a,b){return pct(b)-pct(a)});
+  var out=rows.reduce(function(s,r){return s+r[1]},0),cop=rows.reduce(function(s,r){return s+r[2]},0),avg=Math.round(out/cop*100);
+  var top=rows.slice(0,3),tOut=top.reduce(function(s,r){return s+r[1]},0),tCop=top.reduce(function(s,r){return s+r[2]},0);
+  document.getElementById('f2a').textContent=Math.round(tCop/cop*100)+'%';document.getElementById('f2b').textContent=Math.round(tOut/out*100)+'%';
+  var x0=226,W=310,X=function(v){return x0+v/50*W},y0=40,rh=31,s='';
+  s+='<text x="0" y="20" font-size="20" font-weight="600" fill="#14202E">Copies on loan by subject, %</text>';
+  s+='<line x1="'+X(avg)+'" x2="'+X(avg)+'" y1="'+(y0-2)+'" y2="'+(y0+rows.length*rh+4)+'" stroke="#8A96A3" stroke-width="2" stroke-dasharray="6 5"/>';
+  s+='<text x="'+(X(avg)+6)+'" y="'+(y0+rows.length*rh+26)+'" font-size="17" fill="#58646F">average '+avg+'% ('+out+' of '+cop.toLocaleString('en-US')+')</text>';
+  rows.forEach(function(r,i){var y=y0+i*rh+4,p=pct(r),hot=i<3,lx=Math.abs(p-avg)<6?X(avg)+7:X(p)+7;
+    s+='<text x="'+(x0-10)+'" y="'+(y+18)+'" font-size="19" text-anchor="end" fill="#14202E"'+(hot?' font-weight="600"':'')+'>'+r[0].replace('&','&amp;')+'</text>';
+    s+='<rect x="'+x0+'" y="'+y+'" width="'+(X(p)-x0)+'" height="23" rx="2" fill="'+(hot?'#1F3A5F':'#C5CBD2')+'"/>';
+    s+='<text x="'+lx+'" y="'+(y+18)+'" font-size="19" fill="#14202E"'+(hot?' font-weight="600"':'')+'>'+p+'%</text>'});
+  document.getElementById('chart').innerHTML=s;
+})();
+</script>
+</body>
+</html>

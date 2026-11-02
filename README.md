@@ -4,6 +4,10 @@ Smart university library web app: a static site on GitHub Pages with a Supabase 
 
 Live: https://zhubanush.github.io/AituLib/
 
+Poster (A1, PDF): https://zhubanush.github.io/AituLib/poster/AuraLib_poster_A1.pdf
+
+Team: Zhubanysh · Sultan, group IOT-2603, Astana IT University.
+
 ## Features
 
 - **Find a book**: search and filters, and a floor plan that shows the route to the shelf. Click an aisle to list its books. Every book has a QR code.
