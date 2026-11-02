@@ -7,7 +7,7 @@
   .authtabs{display:flex;gap:8px;margin:16px 0}
   .authform{max-width:440px;margin-bottom:24px}
   .fld{display:grid;gap:6px;margin-bottom:12px}.fld label{font-weight:600;font-size:14px}
-  .fld input{padding:10px 12px;border:1px solid var(--line,#c9d3d6);border-radius:4px;font:inherit;min-height:44px;background:#fff;color:var(--ink);width:100%}
+  .fld input{padding:10px 12px;border:1px solid var(--line,#c9d3d6);border-radius:4px;font:inherit;min-height:44px;background:var(--surface,#fff);color:var(--ink);width:100%}
   .fld small{color:var(--muted)}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:16px 0 24px}
   .stat{border:1px solid var(--line,#c9d3d6);border-radius:6px;padding:12px}.stat b{display:block;font-size:26px}.stat span{color:var(--muted);font-size:13px}
@@ -39,11 +39,18 @@
     .toprow{grid-template-columns:28px 44px minmax(0,1fr);gap:10px}
     .toprow .side{grid-column:2/-1;flex-direction:row;align-items:center;justify-content:space-between;text-align:left}
   }
-</style></head><body>
+</style>
 <title>AuraLib</title>
+<meta name="description" content="AuraLib: find a book and its shelf, book study rooms, borrow at self-checkout, join the reading challenge and book club.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{var t=localStorage.getItem('auralib.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+</head><body>
 <style>
 /* Layout: a working catalog. Search and results on the left, a floor plan on the right that follows the selected book. */
 :root{
@@ -251,29 +258,128 @@ footer{border-top:1px solid var(--line)}
     html,body{overflow-x:hidden}
   }
 </style>
+<style>
+/* ---- v2: header tools, notifications, reviews, challenge, club, scanner, PWA ---- */
+header.top .wrap{position:relative}
+.tools{display:flex;gap:6px;align-items:center;margin-left:auto}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:4px;padding:5px 9px;color:var(--muted);line-height:1.2;position:relative;min-width:34px}
+.iconbtn:hover{color:var(--ink);border-color:var(--muted)}
+.iconbtn .count{position:absolute;top:-7px;right:-7px;font-family:var(--f-mono);font-size:10.5px;background:var(--bad);color:#fff;border-radius:9px;padding:0 5px;line-height:16px}
+select.lang{background:none;border:1px solid var(--line);border-radius:4px;padding:5px 6px;color:var(--muted)}
+.acct{background:var(--accent);color:var(--accent-ink);border:0;border-radius:4px;padding:6px 12px;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct[aria-current="page"]{box-shadow:inset 0 -2px 0 var(--hl)}
+nav{margin-left:0;width:100%}
+.popover{position:absolute;right:0;top:calc(100% + 4px);width:min(380px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:12px 14px;z-index:20;max-height:70vh;overflow:auto}
+.pophead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.nitem{padding:8px 0 8px 10px;border-top:1px solid var(--line);font-size:14px;border-left:3px solid transparent}
+.nitem small{display:block;color:var(--muted);font-size:12px}
+.nitem.unread{border-left-color:var(--accent)}.nitem.warn{border-left-color:var(--warn)}
+.muted{color:var(--muted)}.serif{font-family:var(--f-title)}
+.toasts{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:50;width:min(460px,calc(100vw - 24px));pointer-events:none}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;border-left:4px solid var(--ok);transition:opacity .5s,transform .5s}
+.toast.bad{border-left-color:var(--bad)}.toast.warn{border-left-color:var(--warn)}.toast.out{opacity:0;transform:translateY(8px)}
+.offline{background:var(--warn);color:#fff;text-align:center;padding:6px 12px;font-size:14px;margin-inline:-16px}
+.btn.busy{opacity:.6;cursor:progress}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font-size:13px}
+.fld input,.fld select,.fld textarea,.revform textarea{padding:10px 12px;border:1px solid var(--line);border-radius:4px;font:inherit;min-height:44px;background:var(--surface);color:var(--ink);width:100%}
+.fld [aria-invalid="true"]{border-color:var(--bad);box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 20%,transparent)}
+.check{display:flex;gap:8px;align-items:center;margin:0 0 14px}
+.check input{width:18px;height:18px}
+/* map: clickable aisles */
+.map .aisle{cursor:pointer}.map .aisle:hover .sh{stroke:var(--accent);stroke-width:2}
+.map .aisle:focus{outline:none}.map .aisle:focus-visible .sh{stroke:var(--accent);stroke-width:3}
+.map .sh.pick{stroke:var(--accent);stroke-width:2.5;fill:color-mix(in srgb,var(--accent) 22%,var(--shelf))}
+aside.plan{max-height:calc(100vh - 100px);overflow:auto}
+@media(max-width:900px){aside.plan{max-height:none}}
+.qrbox svg{background:#fff;border-radius:4px;display:block;margin-top:12px;width:168px;height:auto}
+/* reviews */
+.revbox{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}.revbox h3{margin:0 0 6px;font-size:16px}
+.stars{color:var(--hl);letter-spacing:1px;white-space:nowrap}.stars .off{color:var(--line)}
+.rev{padding:10px 0;border-top:1px solid var(--line);font-size:14px}.rev p{margin:4px 0 0}
+.revform{margin:8px 0 12px}
+.starpick{display:flex;gap:2px;margin-bottom:6px}
+.starpick button{background:none;border:0;font-size:24px;line-height:1;color:var(--line);padding:2px}
+.starpick button.on{color:var(--hl)}
+/* profile and challenge */
+.goal{border:1px solid var(--line);border-radius:6px;padding:14px 16px;background:var(--surface);margin:8px 0 20px}
+.goalhead{display:flex;justify-content:space-between;margin-bottom:8px}
+.pbar.big{height:10px;max-width:none;border-radius:5px}.pbar.big i{border-radius:5px}
+.twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-bottom:12px}
+.twocol.wide{grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:32px}
+.twocol h3{margin:0 0 8px}
+svg.chart{width:100%;height:auto;display:block}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0 20px}
+.bdg{border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:2px;position:relative;opacity:.55;filter:grayscale(1)}
+.bdg.on{opacity:1;filter:none;border-color:var(--hl)}
+.bdg .bi{font-size:24px}.bdg small{color:var(--muted);font-size:12px;line-height:1.35}
+.bdg .lock{position:absolute;top:8px;right:10px;font-size:11px;color:var(--muted)}
+table.lb th.r,table.lb td.r{text-align:right}
+table.lb tr.me td{background:color-mix(in srgb,var(--hl) 16%,transparent)}
+.rules{border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:0 0 24px;background:var(--surface)}
+.rules summary{cursor:pointer;font-weight:600}.rules ul{margin:8px 0 0;padding-left:20px}
+/* club */
+.clubpick{display:grid;grid-template-columns:88px minmax(0,1fr);gap:20px;align-items:start;border:1px solid var(--line);border-radius:6px;padding:18px;background:var(--surface);margin-bottom:28px}
+.clubpick .cover{width:88px;height:120px}.clubpick .cover b{font-size:30px}.clubpick .cover i{font-size:11px}
+.post{padding:12px 0;border-bottom:1px solid var(--line)}.post p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.votes{display:flex;flex-direction:column;gap:10px}
+.vote .vt{display:flex;justify-content:space-between;gap:12px}.vote .pbar{max-width:none;margin-top:4px}
+.vote.mine .vt span:first-child::after{content:" ✓";color:var(--ok)}
+/* rooms live badge */
+.live{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ok);font-weight:600}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}
+@media(prefers-reduced-motion:no-preference){.live::before{animation:pulse 1.6s ease-in-out infinite}@keyframes pulse{50%{opacity:.3}}}
+/* checkout: tray + scanner */
+.traylist{display:flex;flex-wrap:wrap;gap:8px}
+.trayitem{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:4px;padding:4px 4px 4px 10px;background:var(--surface);font-family:var(--f-title)}
+.trayitem .iconbtn{padding:0 7px;min-width:0;border:0}
+.scanrow{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin:0 0 20px}
+.scanrow form{display:flex;gap:8px;flex:1 1 280px}
+.scanrow input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:9px 12px}
+#scanWrap{border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--surface);margin-bottom:20px;max-width:420px}
+#reader{width:100%;overflow:hidden;border-radius:4px}#reader video{border-radius:4px}
+@media(max-width:600px){
+  header.top .wrap{gap:6px}
+  .tools{margin-left:auto}
+  nav{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-inline:-12px;padding-inline:8px;width:calc(100% + 24px)}
+  nav::-webkit-scrollbar{display:none}
+  nav button{flex:0 0 auto;padding:10px 8px;font-size:13px}
+  .offline{margin-inline:-12px}
+  .clubpick{grid-template-columns:60px minmax(0,1fr);gap:14px;padding:14px}.clubpick .cover{width:60px;height:82px}
+  .twocol,.twocol.wide{grid-template-columns:minmax(0,1fr)}
+}
+</style>
 
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>AuraLib <small>Central University Library</small></div>
+  <div class="brand"><span class="logo" aria-hidden="true"><i></i><i></i><i></i><i></i></span>AuraLib <small data-i18n="brand.sub">Central University Library</small></div>
+  <div class="tools">
+    <button class="iconbtn" id="bell" data-i18n-aria="note.title" aria-label="Notifications">🔔<span class="count" id="bellCount" hidden></span></button>
+    <select class="lang" id="lang" aria-label="Language"><option value="en">EN</option><option value="ru">RU</option><option value="kk">KZ</option></select>
+    <button class="iconbtn" id="themeBtn" aria-label="Theme">◐</button>
+    <button class="acct" data-view="profile" id="navProfile">Sign in</button>
+  </div>
+  <div class="popover" id="notePanel" hidden></div>
   <nav aria-label="Main">
-    <button data-view="find">Find a book</button>
-    <button data-view="top">Top books</button>
-    <button data-view="spaces">Study spaces</button>
-    <button data-view="checkout">Self-checkout</button>
-    <button data-view="smart">Smart</button>
-    <button data-view="insights">Insights</button>
-    <button data-view="profile" id="navProfile">Sign in</button>
-    <button data-view="loans">My account<span class="count" id="loanCount" hidden></span></button>
+    <button data-view="find" data-i18n="nav.find">Find a book</button>
+    <button data-view="top" data-i18n="nav.top">Top books</button>
+    <button data-view="spaces" data-i18n="nav.spaces">Study spaces</button>
+    <button data-view="checkout" data-i18n="nav.checkout">Self-checkout</button>
+    <button data-view="challenge" data-i18n="nav.challenge">Challenge</button>
+    <button data-view="club" data-i18n="nav.club">Book club</button>
+    <button data-view="smart" data-i18n="nav.smart">Smart</button>
+    <button data-view="insights" data-i18n="nav.insights">Insights</button>
+    <button data-view="loans"><span data-i18n="nav.loans">My account</span><span class="count" id="loanCount" hidden></span></button>
   </nav>
 </div></header>
+<div class="offline" id="offline" hidden data-i18n="off.banner">You are offline. The catalog and map still work.</div>
 
 <main class="wrap">
 
 <section id="v-find" data-pane>
-  <div class="hero c-sun"><h1>Find a book, then walk straight to its shelf.</h1></div>
+  <div class="hero"><h1 data-i18n="find.h1">Find a book, then walk straight to its shelf.</h1></div>
   <form class="search" id="searchForm" role="search">
-    <input type="search" id="q" placeholder="Title, author, subject or call number" aria-label="Search the catalog" autocomplete="off">
+    <input type="search" id="q" data-i18n-ph="find.ph" data-i18n-aria="find.ph" placeholder="Title, author, subject or call number" autocomplete="off">
   </form>
-  <div class="chips" id="chips" role="group" aria-label="Subject"></div>
+  <div class="chips" id="chips" role="group"></div>
   <div class="split">
     <div>
       <div class="count" id="resCount"></div>
@@ -281,8 +387,9 @@ footer{border-top:1px solid var(--line)}
     </div>
     <aside class="plan" aria-live="polite">
       <h2 id="planTitle">Floor plan</h2>
-      <div class="floors" id="floors" role="group" aria-label="Floor"></div>
-      <svg class="map" id="map" viewBox="0 0 440 320" role="img" aria-label="Floor plan"></svg>
+      <div class="floors" id="floors" role="group"></div>
+      <svg class="map" id="map" viewBox="0 0 440 320" role="group" aria-label="Floor plan"></svg>
+      <p class="muted" id="mapHint" style="font-size:12.5px;margin:6px 0 0"></p>
       <div class="where" id="where"></div>
     </aside>
   </div>
@@ -291,1197 +398,57 @@ footer{border-top:1px solid var(--line)}
 <section id="v-top" data-pane hidden><div id="topBox"></div></section>
 
 <section id="v-spaces" data-pane hidden>
-  <div class="hero c-mint"><h1>Reserve a study room.</h1></div>
-  <p class="lede">Rooms are booked by the hour. Pick a day, choose one or more consecutive hours, and confirm. You can hold up to three hours a day in total, across all rooms. Bookings can be cancelled until 30 minutes before they start.</p>
-  <div class="days" id="days" role="group" aria-label="Day"></div>
+  <div class="hero"><h1 data-i18n="spaces.h1">Reserve a study room.</h1></div>
+  <p class="lede"><span data-i18n="spaces.lede"></span> <span id="liveRooms"></span></p>
+  <div class="days" id="days" role="group"></div>
   <div id="spaceNote"></div>
   <div class="rooms" id="rooms"></div>
   <div class="bar" id="spaceBar" hidden>
     <span id="spaceSummary"></span>
-    <span class="actions"><button class="btn" id="confirmRoom">Confirm reservation</button> <button class="btn sm" id="demoRace" title="Presentation demo: simulates a race condition">Demo: someone books it first</button></span>
+    <span class="actions"><button class="btn" id="confirmRoom" data-i18n="spaces.confirm">Confirm reservation</button></span>
   </div>
 </section>
 
 <section id="v-checkout" data-pane hidden>
-  <div class="hero c-pink"><h1>Self-checkout.</h1></div>
-  <p class="lede">Put up to ten books on the desk, flat and spines up. The reader picks up every tag at once, so there is nothing to scan one by one.</p>
-  <div class="desk">
-    <div class="stack" aria-hidden="true"><i style="height:62px;background:#2F6F73"></i><i style="height:48px;background:#9A4A3A"></i><i style="height:56px;background:#B88A2A"></i></div>
-    <div style="flex:1 1 220px"><strong>Checkout desk, ground floor</strong><div style="color:var(--muted)" id="deskState">3 books on the desk. Ready to read.</div></div>
-    <button class="btn" id="scanBtn">Read tags</button>
+  <div class="hero"><h1 data-i18n="co.h1">Self-checkout.</h1></div>
+  <p class="lede" data-i18n="co.lede"></p>
+  <div class="scanrow">
+    <button class="btn ghost" id="camBtn" data-i18n="co.cam">Scan with camera</button>
+    <form id="manualForm"><input id="manualCode" data-i18n-ph="co.manualPh" data-i18n-aria="co.manualPh" autocomplete="off" inputmode="text"><button class="btn ghost" type="submit" data-i18n="co.add">Add</button></form>
   </div>
-  <div id="loanNote2"></div><div id="scanOut"></div>
+  <div id="manualMsg"></div>
+  <div id="scanWrap" hidden><div id="reader"></div><div id="scanMsg"></div><button class="btn ghost sm" id="stopCam" data-i18n="co.stop">Stop camera</button></div>
+  <div class="desk">
+    <div class="stack" aria-hidden="true" id="deskStack"></div>
+    <div style="flex:1 1 220px"><strong data-i18n="co.desk">Checkout desk, ground floor</strong><div class="muted" id="deskState"></div></div>
+    <button class="btn" id="scanBtn" data-i18n="co.read">Read tags</button>
+  </div>
+  <div id="scanOut"></div>
 </section>
 
+<section id="v-challenge" data-pane hidden><div id="chBox"></div></section>
+<section id="v-club" data-pane hidden><div id="clubBox"></div></section>
+
 <section id="v-profile" data-pane hidden>
-  <div class="hero c-sun"><h1>Your profile.</h1></div>
+  <div class="hero"><h1 data-i18n="pf.h1">Your profile.</h1></div>
   <div id="profileBox"></div>
 </section>
 
 <section id="v-loans" data-pane hidden>
-  <div class="hero c-sky"><h1>My account.</h1></div>
-  <p class="lede">Signed in as Amira Seitkali, student ID 24-1187.</p>
-  <div id="loanNote"></div><div id="loanAlert"></div>
-  <h2>On loan</h2>
-  <div class="tablewrap" id="loanTable" style="margin-bottom:32px"></div>
-  <h2>Holds and room reservations</h2>
-  <div class="tablewrap" id="resTable"></div>
+  <div class="hero"><h1 data-i18n="ac.h1">My account.</h1></div>
+  <div id="loansBox"></div>
 </section>
 
 <section id="v-smart" data-pane hidden><div id="smartBox"></div></section>
 <section id="v-insights" data-pane hidden><div id="insBox"></div></section>
 </main>
-<footer><div class="wrap">AuraLib prototype (Assignment 4). Catalog data and the sign-in shown here are samples for demonstration.</div></footer>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<footer><div class="wrap" data-i18n="foot">AuraLib prototype. Catalog availability is sample data; accounts, loans, holds, rooms, reviews and the club are stored in Supabase.</div></footer>
 
-<script>
-(function(){
-  var DAY=86400000;
-  function addDays(n){var d=new Date();d.setHours(0,0,0,0);return new Date(d.getTime()+n*DAY)}
-  function fmt(d){return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
-  function fmtLong(d){return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
-  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-
-/*BOOKING-CORE*/
-var Booking=(function(){
-  var KEY='auralib.reservations.v2', OPEN=9, CLOSE=20, MAX_HOURS=3, MAX_AHEAD=7, CANCEL_MIN=30, ME=null;
-  var mem=[];
-  function load(){try{var s=localStorage.getItem(KEY);return s?JSON.parse(s):[]}catch(e){return mem}}
-  function save(l){mem=l;try{localStorage.setItem(KEY,JSON.stringify(l))}catch(e){}}
-  function pad(n){return n<10?'0'+n:''+n}
-  function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
-  function dayDiff(date,now){
-    var a=new Date(date+'T00:00:00'),b=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    return Math.round((a-b)/86400000);
-  }
-  /* stand-in for other students' bookings that the server would hold */
-  function seeded(room,date,h,now){
-    var s=(((room.charCodeAt(1)*7+dayDiff(date,now)*13+h*5)%11)+11)%11;
-    return s===0||(s===3&&h>13);
-  }
-  function hit(r,room,date,h){return r.status==='active'&&r.room===room&&r.date===date&&r.start<=h&&h<r.end}
-  function err(code,message){return{ok:false,code:code,message:message}}
-
-  function isBusy(room,date,h,now){
-    now=now||new Date();
-    return seeded(room,date,h,now)||load().some(function(r){return hit(r,room,date,h)});
-  }
-  function hoursOn(user,date){
-    return load().reduce(function(n,r){return n+((r.status==='active'&&r.user===user&&r.date===date)?r.end-r.start:0)},0);
-  }
-  function create(req,now){
-    now=now||new Date();
-    var list=load(), user=req.user||ME, s=+req.start, e=+req.end, h;
-    if(!user)return err('E_AUTH','Sign in to book a study room.');
-    if(!req.room||!/^\d{4}-\d{2}-\d{2}$/.test(req.date||'')||isNaN(s)||isNaN(e))
-      return err('E_INPUT','Choose a room, a day and at least one hour.');
-    if(s<OPEN||e>CLOSE||e<=s)
-      return err('E_HOURS','Study rooms are open from '+OPEN+':00 to '+CLOSE+':00.');
-    if(e-s>MAX_HOURS)
-      return err('E_DURATION','One booking can be at most '+MAX_HOURS+' hours.');
-    var dd=dayDiff(req.date,now);
-    if(dd<0||(dd===0&&s<=now.getHours()))
-      return err('E_PAST','That hour has already started or passed. Choose a later hour.');
-    if(dd>MAX_AHEAD)
-      return err('E_AHEAD','You can book up to '+MAX_AHEAD+' days ahead.');
-    for(h=s;h<e;h++){
-      if(isBusy(req.room,req.date,h,now))
-        return err('E_CONFLICT','The room is already booked at '+pad(h)+':00. Pick another slot.');
-    }
-    if(list.some(function(r){return r.status==='active'&&r.user===user&&r.date===req.date&&r.start<e&&s<r.end}))
-      return err('E_SELF','You already have a booking in another room at this time.');
-    var used=hoursOn(user,req.date);
-    if(used+(e-s)>MAX_HOURS)
-      return err('E_DAILY','Daily limit: you have '+used+' h booked that day and the maximum is '+MAX_HOURS+' h in total.');
-    var rec={id:'r'+now.getTime()+Math.floor(Math.random()*1e4),
-      code:'AL-'+Math.random().toString(36).slice(2,6).toUpperCase(),
-      user:user,room:req.room,date:req.date,start:s,end:e,status:'active',created:now.toISOString()};
-    list.push(rec);save(list);
-    return{ok:true,reservation:rec};
-  }
-  function cancel(id,now,user){
-    now=now||new Date();user=user||ME;
-    var list=load(), r=list.filter(function(x){return x.id===id&&x.user===user&&x.status==='active'})[0];
-    if(!r)return err('E_NOTFOUND','This reservation no longer exists.');
-    var st=new Date(r.date+'T00:00:00');st.setHours(r.start);
-    if((st-now)/60000<CANCEL_MIN)
-      return err('E_LATE','Bookings can be cancelled until '+CANCEL_MIN+' minutes before the start.');
-    r.status='cancelled';save(list);
-    return{ok:true,reservation:r};
-  }
-  function mine(user,now){
-    now=now||new Date();user=user||ME;
-    return load().filter(function(r){
-      var en=new Date(r.date+'T00:00:00');en.setHours(r.end);
-      return r.status==='active'&&r.user===user&&en>now}).sort(function(a,b){
-      return a.date===b.date?a.start-b.start:(a.date<b.date?-1:1)});
-  }
-  /* demo helper: simulates another student booking while you are still choosing */
-  function injectOther(room,date,s,e){var l=load();l.push({id:'x'+Date.now(),code:'AL-DEMO',user:'other',room:room,date:date,start:s,end:e,status:'active',created:new Date().toISOString()});save(l)}
-  function reset(){save([])}
-  function dropUser(u){save(load().filter(function(r){return r.user!==u}))}
-  return{create:create,cancel:cancel,mine:mine,isBusy:isBusy,hoursOn:hoursOn,iso:iso,injectOther:injectOther,reset:reset,
-    limits:{open:OPEN,close:CLOSE,maxHours:MAX_HOURS,maxAhead:MAX_AHEAD,cancelMin:CANCEL_MIN},me:function(){return ME},setUser:function(u){ME=u},dropUser:dropUser};
-})();
-/*END-BOOKING-CORE*/
-
-  function curDate(){return Booking.iso(addDays(state.day))}
-  function dayLabel(iso){var d=new Date(iso+'T00:00:00');return iso===Booking.iso(new Date())?'today':fmtLong(d)}
-
-  var SUBJECTS=['All','Literature','Poetry','Philosophy & History','Science','Computer science','Design','Economics','Physics','Mathematics','Psychology','Central Asia'];
-  var BOOKS=[
-    {id:1,t:'Artificial Intelligence: A Modern Approach',a:'Stuart Russell, Peter Norvig',s:'Computer science',call:'Q335 .R86 2021',floor:2,aisle:14,shelf:'C',copies:3,left:2,y:2021,c:'#2F6F73'},
-    {id:2,t:'Designing Data-Intensive Applications',a:'Martin Kleppmann',s:'Computer science',call:'QA76.9.D3 K54 2017',floor:2,aisle:16,shelf:'B',copies:2,left:0,due:6,y:2017,c:'#9A4A3A'},
-    {id:3,t:'Introduction to Algorithms',a:'Thomas H. Cormen et al.',s:'Computer science',call:'QA76.6 .C662 2022',floor:2,aisle:13,shelf:'A',copies:4,left:3,y:2022,c:'#34568B'},
-    {id:4,t:'The Design of Everyday Things',a:'Don Norman',s:'Design',call:'TS171 .N67 2013',floor:1,aisle:3,shelf:'D',copies:2,left:1,y:2013,c:'#B88A2A'},
-    {id:5,t:'Don’t Make Me Think',a:'Steve Krug',s:'Design',call:'QA76.76.H94 K78 2014',floor:1,aisle:4,shelf:'B',copies:2,left:0,due:11,y:2014,c:'#5B4B8A'},
-    {id:6,t:'Thinking, Fast and Slow',a:'Daniel Kahneman',s:'Economics',call:'BF441 .K238 2011',floor:3,aisle:27,shelf:'E',copies:3,left:3,y:2011,c:'#2F6F73'},
-    {id:7,t:'The Wealth of Nations',a:'Adam Smith',s:'Economics',call:'HB161 .S6 2003',floor:3,aisle:30,shelf:'A',copies:1,left:1,y:2003,c:'#8A4A62'},
-    {id:8,t:'The Feynman Lectures on Physics, Vol. 1',a:'Richard Feynman',s:'Physics',call:'QC23 .F435 2011',floor:3,aisle:34,shelf:'C',copies:2,left:1,y:2011,c:'#34568B'},
-    {id:9,t:'A Brief History of Time',a:'Stephen Hawking',s:'Physics',call:'QB981 .H377 1998',floor:3,aisle:35,shelf:'B',copies:2,left:2,y:1998,c:'#B88A2A'},
-    {id:10,t:'One Hundred Years of Solitude',a:'Gabriel García Márquez',s:'Literature',call:'PQ8180.17.A74 C513',floor:1,aisle:9,shelf:'F',copies:2,left:2,y:1970,c:'#9A4A3A'},
-    {id:11,t:'The Master and Margarita',a:'Mikhail Bulgakov',s:'Literature',call:'PG3476.B78 M3713',floor:1,aisle:11,shelf:'A',copies:1,left:0,due:3,y:1997,c:'#2F6F73'}
-  ];
-
-  /* Russian authors (sample records, titles in English translation) */
-  var RU=[
-    ["War and Peace","Leo Tolstoy","Literature","PG3366 .W3 1869",1869],
-    ["Anna Karenina","Leo Tolstoy","Literature","PG3365 .A6 1878",1878],
-    ["Resurrection","Leo Tolstoy","Literature","PG3366 .V6 1899",1899],
-    ["The Death of Ivan Ilyich","Leo Tolstoy","Literature","PG3366 .S4 1886",1886],
-    ["Crime and Punishment","Fyodor Dostoevsky","Literature","PG3328 .P7 1866",1866],
-    ["The Idiot","Fyodor Dostoevsky","Literature","PG3327 .I3 1869",1869],
-    ["The Brothers Karamazov","Fyodor Dostoevsky","Literature","PG3326 .B7 1880",1880],
-    ["Demons","Fyodor Dostoevsky","Literature","PG3327 .B4 1872",1872],
-    ["Notes from Underground","Fyodor Dostoevsky","Literature","PG3328 .Z5 1864",1864],
-    ["White Nights","Fyodor Dostoevsky","Literature","PG3328 .B4 1848",1848],
-    ["The Cherry Orchard","Anton Chekhov","Literature","PG3456 .V5 1904",1904],
-    ["Uncle Vanya","Anton Chekhov","Literature","PG3456 .D8 1899",1899],
-    ["The Seagull","Anton Chekhov","Literature","PG3456 .C3 1896",1896],
-    ["Selected Stories","Anton Chekhov","Literature","PG3456 .A3 1999",1999],
-    ["Fathers and Sons","Ivan Turgenev","Literature","PG3420 .O8 1862",1862],
-    ["A Sportsman\u2019s Sketches","Ivan Turgenev","Literature","PG3420 .Z3 1852",1852],
-    ["Dead Souls","Nikolai Gogol","Literature","PG3333 .M4 1842",1842],
-    ["The Overcoat","Nikolai Gogol","Literature","PG3333 .S5 1842",1842],
-    ["The Government Inspector","Nikolai Gogol","Literature","PG3333 .R4 1836",1836],
-    ["The Captain\u2019s Daughter","Alexander Pushkin","Literature","PG3347 .K3 1836",1836],
-    ["A Hero of Our Time","Mikhail Lermontov","Literature","PG3337 .G4 1840",1840],
-    ["Oblomov","Ivan Goncharov","Literature","PG3338 .O3 1859",1859],
-    ["Heart of a Dog","Mikhail Bulgakov","Literature","PG3476 .B78 S4",1925],
-    ["The White Guard","Mikhail Bulgakov","Literature","PG3476 .B78 B4",1925],
-    ["Doctor Zhivago","Boris Pasternak","Literature","PG3476 .P27 D6",1957],
-    ["One Day in the Life of Ivan Denisovich","Aleksandr Solzhenitsyn","Literature","PG3488 .O4 O5",1962],
-    ["And Quiet Flows the Don","Mikhail Sholokhov","Literature","PG3476 .S5 T5",1940],
-    ["Mother","Maxim Gorky","Literature","PG3465 .M6 1906",1906],
-    ["The Lower Depths","Maxim Gorky","Literature","PG3465 .N3 1902",1902],
-    ["We","Yevgeny Zamyatin","Literature","PG3476 .Z34 M9",1924],
-    ["The Foundation Pit","Andrei Platonov","Literature","PG3476 .P55 K6",1930],
-    ["Red Cavalry","Isaac Babel","Literature","PG3476 .B3 K6",1926],
-    ["The Gentleman from San Francisco","Ivan Bunin","Literature","PG3465 .B8 G6",1915],
-    ["Roadside Picnic","Arkady and Boris Strugatsky","Literature","PG3476 .S77 P5",1972],
-    ["The Twelve Chairs","Ilya Ilf and Yevgeny Petrov","Literature","PG3476 .I55 D5",1928],
-    ["Lady Macbeth of Mtsensk","Nikolai Leskov","Literature","PG3337 .L4 L4",1865],
-    ["Eugene Onegin","Alexander Pushkin","Poetry","PG3347 .E8 1833",1833],
-    ["Selected Poems","Alexander Pushkin","Poetry","PG3347 .A2 2012",2012],
-    ["Selected Poems","Anna Akhmatova","Poetry","PG3476 .A4 A6",1976],
-    ["Selected Poems","Marina Tsvetaeva","Poetry","PG3476 .T75 A6",1987],
-    ["Stone","Osip Mandelstam","Poetry","PG3476 .M23 K3",1913],
-    ["Collected Poems in English","Joseph Brodsky","Poetry","PG3479.6 .R64 A2",2000],
-    ["Selected Poems","Sergei Yesenin","Poetry","PG3467 .E7 A6",1990],
-    ["Selected Poems","Vladimir Mayakovsky","Poetry","PG3476 .M3 A6",1985],
-    ["The Twelve","Alexander Blok","Poetry","PG3453 .B6 D8",1918],
-    ["The Meaning of History","Nikolai Berdyaev","Philosophy & History","D16.8 .B4 1923",1923],
-    ["The Meaning of Love","Vladimir Solovyov","Philosophy & History","B4260 .S6 1985",1892],
-    ["A Course in Russian History","Vasily Klyuchevsky","Philosophy & History","DK38 .K59 1987",1904],
-    ["Problems of Dostoevsky\u2019s Poetics","Mikhail Bakhtin","Philosophy & History","PG3328 .Z8 B3",1929],
-    ["Morphology of the Folktale","Vladimir Propp","Philosophy & History","GR550 .P7 1968",1928],
-    ["My Past and Thoughts","Alexander Herzen","Philosophy & History","DK209.6 .H4 A3",1868],
-    ["Mutual Aid","Peter Kropotkin","Philosophy & History","HX833 .K7 1902",1902],
-    ["Hope Against Hope","Nadezhda Mandelstam","Philosophy & History","PG3476 .M28 Z4",1970],
-    ["Mind in Society","Lev Vygotsky","Philosophy & History","BF311 .V95 1978",1978],
-    ["Principles of Chemistry","Dmitri Mendeleev","Science","QD31 .M5 1905",1868],
-    ["Conditioned Reflexes","Ivan Pavlov","Science","QP376 .P3 1927",1927],
-    ["The Biosphere","Vladimir Vernadsky","Science","QH343.4 .V4 1998",1926],
-    ["Foundations of the Theory of Probability","Andrey Kolmogorov","Science","QA273 .K63 1956",1933],
-    ["Mechanics (Course of Theoretical Physics, Vol. 1)","Lev Landau and Evgeny Lifshitz","Physics","QC125.2 .L3 1976",1976]
-  ];
-  var LOC={"Literature":[1,[8,9,10,11,12]],"Poetry":[1,[7]],"Philosophy & History":[3,[25,26]],"Science":[3,[31,32,33]],"Physics":[3,[34]]};
-  var PAL=["#2F6F73","#9A4A3A","#34568B","#B88A2A","#5B4B8A","#8A4A62"];
-  RU.forEach(function(r,i){
-    var loc=LOC[r[2]], copies=1+(i%3), left=(i%5===0)?0:Math.max(1,copies-(i%4===1?1:0));
-    var b={id:100+i,t:r[0],a:r[1],s:r[2],call:r[3],floor:loc[0],aisle:loc[1][i%loc[1].length],shelf:"ABCDEF".charAt(i%6),copies:copies,left:left,y:r[4],c:PAL[i%6]};
-    if(!left)b.due=2+(i*3)%19;
-    BOOKS.push(b);
-  });
-
-  /* ---- A4: 100 more titles (sample records; availability is simulated) ---- */
-  var SUBJ2={C:['Computer science','QA76',2,[13,14,15,16,17]],M:['Mathematics','QA',2,[18,19]],S:['Science','Q',3,[31,32,33]],Y:['Physics','QC',3,[34,35,36]],E:['Economics','HB',3,[27,28,29,30]],G:['Psychology','BF',3,[26]],D:['Design','NK',1,[3,4]],H:['Philosophy & History','B',3,[25,26]],L:['Literature','PR',1,[9,10,11,12]],K:['Central Asia','PG',1,[5,6]],P:['Poetry','PS',1,[7]]};
-  var NEWB=`
-Clean Code|Robert C. Martin|C|2008
-The Pragmatic Programmer|David Thomas, Andrew Hunt|C|2019
-Structure and Interpretation of Computer Programs|Harold Abelson, Gerald Sussman|C|1996
-Computer Networking: A Top-Down Approach|James Kurose, Keith Ross|C|2021
-Operating System Concepts|Abraham Silberschatz et al.|C|2018
-Database System Concepts|Abraham Silberschatz et al.|C|2019
-Computer Organization and Design|David Patterson, John Hennessy|C|2020
-Code Complete|Steve McConnell|C|2004
-Design Patterns|Erich Gamma et al.|C|1994
-Refactoring|Martin Fowler|C|2018
-Deep Learning|Ian Goodfellow, Yoshua Bengio|C|2016
-Pattern Recognition and Machine Learning|Christopher Bishop|C|2006
-Hands-On Machine Learning|Aurélien Géron|C|2022
-The Mythical Man-Month|Frederick Brooks|C|1995
-Cryptography Engineering|Niels Ferguson, Bruce Schneier|C|2010
-Computer Systems: A Programmer’s Perspective|Randal Bryant, David O’Hallaron|C|2015
-Python Crash Course|Eric Matthes|C|2023
-Internet of Things: Principles and Paradigms|Rajkumar Buyya, Amir Dastjerdi|C|2016
-Building Microservices|Sam Newman|C|2021
-Release It!|Michael Nygard|C|2018
-Calculus|James Stewart|M|2015
-Linear Algebra and Its Applications|David C. Lay|M|2015
-Discrete Mathematics and Its Applications|Kenneth Rosen|M|2018
-Concrete Mathematics|Ronald Graham, Donald Knuth|M|1994
-How to Solve It|George Pólya|M|1945
-Introduction to Probability|Joseph Blitzstein, Jessica Hwang|M|2019
-Fermat’s Enigma|Simon Singh|M|1997
-Gödel, Escher, Bach|Douglas Hofstadter|M|1979
-The Selfish Gene|Richard Dawkins|S|1976
-Cosmos|Carl Sagan|S|1980
-Silent Spring|Rachel Carson|S|1962
-The Structure of Scientific Revolutions|Thomas Kuhn|S|1962
-On the Origin of Species|Charles Darwin|S|1859
-Chemistry: The Central Science|Theodore Brown et al.|S|2017
-Campbell Biology|Lisa Urry et al.|S|2020
-The Gene|Siddhartha Mukherjee|S|2016
-University Physics|Hugh Young, Roger Freedman|Y|2019
-Introduction to Electrodynamics|David Griffiths|Y|2017
-Introduction to Quantum Mechanics|David Griffiths|Y|2018
-The Elegant Universe|Brian Greene|Y|1999
-Six Easy Pieces|Richard Feynman|Y|1995
-Astrophysics for People in a Hurry|Neil deGrasse Tyson|Y|2017
-Principles of Economics|N. Gregory Mankiw|E|2020
-Freakonomics|Steven Levitt, Stephen Dubner|E|2005
-Capital in the Twenty-First Century|Thomas Piketty|E|2014
-The General Theory of Employment, Interest and Money|John Maynard Keynes|E|1936
-Poor Economics|Abhijit Banerjee, Esther Duflo|E|2011
-The Intelligent Investor|Benjamin Graham|E|1949
-Zero to One|Peter Thiel|E|2014
-The Lean Startup|Eric Ries|E|2011
-Good to Great|Jim Collins|E|2001
-Nudge|Richard Thaler, Cass Sunstein|E|2008
-Man’s Search for Meaning|Viktor Frankl|G|1946
-Atomic Habits|James Clear|G|2018
-Flow|Mihaly Csikszentmihalyi|G|1990
-Influence: The Psychology of Persuasion|Robert Cialdini|G|1984
-Grit|Angela Duckworth|G|2016
-Mindset|Carol Dweck|G|2006
-Deep Work|Cal Newport|G|2016
-Predictably Irrational|Dan Ariely|G|2008
-Universal Principles of Design|William Lidwell et al.|D|2010
-Sprint|Jake Knapp|D|2016
-The Elements of Typographic Style|Robert Bringhurst|D|2004
-Ways of Seeing|John Berger|D|1972
-Hooked|Nir Eyal|D|2014
-Refactoring UI|Adam Wathan, Steve Schoger|D|2018
-Sapiens|Yuval Noah Harari|H|2011
-Guns, Germs, and Steel|Jared Diamond|H|1997
-The Republic|Plato|H|2004
-Meditations|Marcus Aurelius|H|2002
-Critique of Pure Reason|Immanuel Kant|H|1998
-Beyond Good and Evil|Friedrich Nietzsche|H|1886
-The Prince|Niccolò Machiavelli|H|1532
-Leviathan|Thomas Hobbes|H|1651
-The Silk Roads|Peter Frankopan|H|2015
-Nicomachean Ethics|Aristotle|H|2009
-1984|George Orwell|L|1949
-Animal Farm|George Orwell|L|1945
-Pride and Prejudice|Jane Austen|L|1813
-Jane Eyre|Charlotte Brontë|L|1847
-The Great Gatsby|F. Scott Fitzgerald|L|1925
-To Kill a Mockingbird|Harper Lee|L|1960
-Brave New World|Aldous Huxley|L|1932
-The Trial|Franz Kafka|L|1925
-The Metamorphosis|Franz Kafka|L|1915
-The Stranger|Albert Camus|L|1942
-Don Quixote|Miguel de Cervantes|L|1605
-Les Misérables|Victor Hugo|L|1862
-The Little Prince|Antoine de Saint-Exupéry|L|1943
-The Alchemist|Paulo Coelho|L|1988
-The Path of Abai|Mukhtar Auezov|K|1942
-Book of Words|Abai Kunanbayev|K|1904
-The Day Lasts More Than a Hundred Years|Chingiz Aitmatov|K|1980
-Jamila|Chingiz Aitmatov|K|1958
-Genghis Khan and the Making of the Modern World|Jack Weatherford|K|2004
-The Great Game|Peter Hopkirk|K|1990
-Leaves of Grass|Walt Whitman|P|1855
-The Waste Land|T. S. Eliot|P|1922
-Ariel|Sylvia Plath|P|1965
-Duino Elegies|Rainer Maria Rilke|P|1923
-`;
-  NEWB.split('\n').forEach(function(ln,i){
-    var p=ln.trim().split('|');if(p.length<4)return;i--;
-    var m=SUBJ2[p[2]],copies=2+(i%3),r=(i*37+11)%10,pop=/[CGE]/.test(p[2])?3:1,out=r<pop?copies:(r<pop+2?1:0),left=copies-out;
-    var sur=p[1].split(/,| and /)[0].trim().split(' ').pop().charAt(0).toUpperCase();
-    var b={id:200+i,t:p[0],a:p[1],s:m[0],call:m[1]+' '+(100+(i*53)%800)+' .'+sur+(1+i%9)+' '+p[3],floor:m[2],aisle:m[3][i%m[3].length],shelf:'ABCDEF'.charAt(i%6),copies:copies,left:left,y:+p[3],c:PAL[(i+2)%6]};
-    if(!left)b.due=2+(i*5)%19;BOOKS.push(b);
-  });
-
-  /* ---- A4 batch 2: 150 more titles (sample records; availability is simulated) ---- */
-  var NEWB2=`
-Algorithms|Robert Sedgewick, Kevin Wayne|C|2011
-The Art of Computer Programming, Vol. 1|Donald Knuth|C|1997
-Compilers: Principles, Techniques, and Tools|Alfred Aho et al.|C|2006
-Modern Operating Systems|Andrew Tanenbaum|C|2014
-Computer Networks|Andrew Tanenbaum|C|2010
-Speech and Language Processing|Daniel Jurafsky, James Martin|C|2023
-Reinforcement Learning: An Introduction|Richard Sutton, Andrew Barto|C|2018
-The Elements of Statistical Learning|Trevor Hastie et al.|C|2009
-Machine Learning: A Probabilistic Perspective|Kevin Murphy|C|2012
-Computer Vision: Algorithms and Applications|Richard Szeliski|C|2022
-Clean Architecture|Robert C. Martin|C|2017
-Domain-Driven Design|Eric Evans|C|2003
-Working Effectively with Legacy Code|Michael Feathers|C|2004
-Head First Design Patterns|Eric Freeman, Elisabeth Robson|C|2020
-Effective Java|Joshua Bloch|C|2018
-Fluent Python|Luciano Ramalho|C|2022
-JavaScript: The Good Parts|Douglas Crockford|C|2008
-Eloquent JavaScript|Marijn Haverbeke|C|2018
-The C Programming Language|Brian Kernighan, Dennis Ritchie|C|1988
-Programming Pearls|Jon Bentley|C|1999
-The Phoenix Project|Gene Kim et al.|C|2018
-Site Reliability Engineering|Betsy Beyer et al.|C|2016
-Accelerate|Nicole Forsgren et al.|C|2018
-Security Engineering|Ross Anderson|C|2020
-Applied Cryptography|Bruce Schneier|C|2015
-The Web Application Hacker’s Handbook|Dafydd Stuttard, Marcus Pinto|C|2011
-Computer Security: Principles and Practice|William Stallings|C|2018
-Database Internals|Alex Petrov|C|2019
-Learning SQL|Alan Beaulieu|C|2020
-Python for Data Analysis|Wes McKinney|C|2022
-Principles of Mathematical Analysis|Walter Rudin|M|1976
-Abstract Algebra|David Dummit, Richard Foote|M|2003
-Introduction to Graph Theory|Douglas West|M|2000
-Probability and Statistics|Morris DeGroot|M|2011
-Elementary Number Theory|David Burton|M|2010
-Numerical Analysis|Richard Burden|M|2015
-Naive Set Theory|Paul Halmos|M|1960
-The Joy of x|Steven Strogatz|M|2012
-Introduction to the Theory of Computation|Michael Sipser|M|2012
-Linear Algebra Done Right|Sheldon Axler|M|2015
-The Double Helix|James Watson|S|1968
-A Short History of Nearly Everything|Bill Bryson|S|2003
-The Immortal Life of Henrietta Lacks|Rebecca Skloot|S|2010
-Organic Chemistry|Paula Bruice|S|2016
-Molecular Biology of the Cell|Bruce Alberts et al.|S|2014
-Biochemistry|Jeremy Berg et al.|S|2019
-The Sixth Extinction|Elizabeth Kolbert|S|2014
-Why We Sleep|Matthew Walker|S|2017
-The Emperor of All Maladies|Siddhartha Mukherjee|S|2010
-Genome|Matt Ridley|S|1999
-Chaos|James Gleick|S|1987
-The Body|Bill Bryson|S|2019
-Physics for Scientists and Engineers|Raymond Serway|Y|2018
-Fundamentals of Physics|David Halliday et al.|Y|2013
-Classical Mechanics|John Taylor|Y|2005
-Thermal Physics|Daniel Schroeder|Y|1999
-Modern Physics|Kenneth Krane|Y|2012
-Relativity: The Special and General Theory|Albert Einstein|Y|1916
-The Order of Time|Carlo Rovelli|Y|2018
-The Universe in a Nutshell|Stephen Hawking|Y|2001
-QED: The Strange Theory of Light and Matter|Richard Feynman|Y|1985
-Microeconomics|Robert Pindyck, Daniel Rubinfeld|E|2018
-Macroeconomics|Olivier Blanchard|E|2021
-Economics|Paul Samuelson, William Nordhaus|E|2009
-Why Nations Fail|Daron Acemoglu, James Robinson|E|2012
-The Undercover Economist|Tim Harford|E|2005
-Basic Economics|Thomas Sowell|E|2014
-Principles of Corporate Finance|Richard Brealey et al.|E|2020
-A Random Walk Down Wall Street|Burton Malkiel|E|2019
-Marketing Management|Philip Kotler|E|2015
-Competitive Strategy|Michael Porter|E|1980
-The Innovator’s Dilemma|Clayton Christensen|E|1997
-The Black Swan|Nassim Taleb|E|2007
-The Road to Serfdom|Friedrich Hayek|E|1944
-Capitalism and Freedom|Milton Friedman|E|1962
-Thinking in Bets|Annie Duke|G|2018
-The Power of Habit|Charles Duhigg|G|2012
-Emotional Intelligence|Daniel Goleman|G|1995
-Drive|Daniel Pink|G|2009
-Quiet|Susan Cain|G|2012
-Psychology|David Myers|G|2020
-Stumbling on Happiness|Daniel Gilbert|G|2006
-Outliers|Malcolm Gladwell|G|2008
-The Body Keeps the Score|Bessel van der Kolk|G|2014
-A Mind for Numbers|Barbara Oakley|G|2014
-Make It Stick|Peter Brown et al.|G|2014
-Peak|Anders Ericsson|G|2016
-The Non-Designer’s Design Book|Robin Williams|D|2014
-Thinking with Type|Ellen Lupton|D|2010
-Grid Systems in Graphic Design|Josef Müller-Brockmann|D|1981
-Emotional Design|Don Norman|D|2004
-About Face|Alan Cooper et al.|D|2014
-Lean UX|Jeff Gothelf|D|2021
-The Visual Display of Quantitative Information|Edward Tufte|D|2001
-Laws of UX|Jon Yablonski|D|2020
-Steal Like an Artist|Austin Kleon|D|2012
-A History of Western Philosophy|Bertrand Russell|H|1945
-The Story of Philosophy|Will Durant|H|1926
-Thus Spoke Zarathustra|Friedrich Nietzsche|H|1883
-Being and Time|Martin Heidegger|H|1927
-The Social Contract|Jean-Jacques Rousseau|H|1762
-Utopia|Thomas More|H|1516
-Politics|Aristotle|H|2013
-The Art of War|Sun Tzu|H|2005
-The Histories|Herodotus|H|2003
-Orientalism|Edward Said|H|1978
-The Clash of Civilizations|Samuel Huntington|H|1996
-Homo Deus|Yuval Noah Harari|H|2016
-Prisoners of Geography|Tim Marshall|H|2015
-Justice|Michael Sandel|H|2009
-Hamlet|William Shakespeare|L|1603
-Macbeth|William Shakespeare|L|1606
-Romeo and Juliet|William Shakespeare|L|1597
-Frankenstein|Mary Shelley|L|1818
-Dracula|Bram Stoker|L|1897
-Wuthering Heights|Emily Brontë|L|1847
-Great Expectations|Charles Dickens|L|1861
-The Picture of Dorian Gray|Oscar Wilde|L|1890
-Moby-Dick|Herman Melville|L|1851
-The Catcher in the Rye|J. D. Salinger|L|1951
-Of Mice and Men|John Steinbeck|L|1937
-The Old Man and the Sea|Ernest Hemingway|L|1952
-Lord of the Flies|William Golding|L|1954
-Fahrenheit 451|Ray Bradbury|L|1953
-Dune|Frank Herbert|L|1965
-The Hobbit|J. R. R. Tolkien|L|1937
-Things Fall Apart|Chinua Achebe|L|1958
-Norwegian Wood|Haruki Murakami|L|1987
-Love in the Time of Cholera|Gabriel García Márquez|L|1985
-The Name of the Rose|Umberto Eco|L|1980
-The Silk Road: A New History|Valerie Hansen|K|2012
-The Empire of the Steppes|René Grousset|K|1970
-Lost Enlightenment|S. Frederick Starr|K|2013
-Tamerlane|Justin Marozzi|K|2004
-Az and Ya|Olzhas Suleimenov|K|1975
-The White Steamship|Chingiz Aitmatov|K|1970
-Farewell, Gulsary!|Chingiz Aitmatov|K|1966
-The Scaffold|Chingiz Aitmatov|K|1986
-The Nomads|Ilyas Yesenberlin|K|1976
-Kazakhstan: Ethnicity, Language and Power|Bhavna Dave|K|2007
-North of Boston|Robert Frost|P|1914
-Howl and Other Poems|Allen Ginsberg|P|1956
-Songs of Innocence and of Experience|William Blake|P|1794
-The Complete Poems|Emily Dickinson|P|1960
-Paradise Lost|John Milton|P|1667
-Selected Poems|W. B. Yeats|P|1933
-Les Fleurs du mal|Charles Baudelaire|P|1857
-Sonnets|William Shakespeare|P|1609
-Odes|John Keats|P|1819
-The Odyssey|Homer|P|1996
-`;
-  var n2=0;
-  NEWB2.split('\n').forEach(function(ln){
-    var p=ln.trim().split('|');if(p.length<4)return;var i=n2++;
-    var m=SUBJ2[p[2]],copies=2+(i%3),r=(i*29+7)%10,pop=/[CGE]/.test(p[2])?3:1,out=r<pop?copies:(r<pop+2?1:0),left=copies-out;
-    var sur=p[1].split(/,| and /)[0].trim().split(' ').pop().charAt(0).toUpperCase();
-    var b={id:400+i,t:p[0],a:p[1],s:m[0],call:m[1]+' '+(100+(i*61)%800)+' .'+sur+(1+i%9)+' '+p[3],floor:m[2],aisle:m[3][i%m[3].length],shelf:'ABCDEF'.charAt((i+3)%6),copies:copies,left:left,y:+p[3],c:PAL[(i+4)%6]};
-    if(!left)b.due=2+(i*7)%19;BOOKS.push(b);
-  });
-
-  /* ---- A4 batch 3: 180 more titles (sample records; availability is simulated) ---- */
-  var NEWB3=`
-Introduction to Machine Learning|Ethem Alpaydin|C|2020
-Probabilistic Graphical Models|Daphne Koller, Nir Friedman|C|2009
-Artificial Intelligence: Foundations of Computational Agents|David Poole, Alan Mackworth|C|2017
-Neural Networks and Deep Learning|Michael Nielsen|C|2015
-Natural Language Processing with Python|Steven Bird et al.|C|2009
-Algorithm Design|Jon Kleinberg, Éva Tardos|C|2005
-The Algorithm Design Manual|Steven Skiena|C|2020
-Grokking Algorithms|Aditya Bhargava|C|2016
-Cracking the Coding Interview|Gayle Laakmann McDowell|C|2015
-Crafting Interpreters|Robert Nystrom|C|2021
-Operating Systems: Three Easy Pieces|Remzi Arpaci-Dusseau|C|2018
-The Linux Programming Interface|Michael Kerrisk|C|2010
-Unix Network Programming|W. Richard Stevens|C|2003
-TCP/IP Illustrated, Volume 1|W. Richard Stevens|C|2011
-Computer Architecture: A Quantitative Approach|John Hennessy, David Patterson|C|2017
-Digital Design and Computer Architecture|David Harris, Sarah Harris|C|2012
-Code: The Hidden Language of Computer Hardware and Software|Charles Petzold|C|2022
-Patterns of Enterprise Application Architecture|Martin Fowler|C|2002
-Enterprise Integration Patterns|Gregor Hohpe, Bobby Woolf|C|2003
-Continuous Delivery|Jez Humble, David Farley|C|2010
-The DevOps Handbook|Gene Kim et al.|C|2016
-Kubernetes in Action|Marko Lukša|C|2018
-Docker Deep Dive|Nigel Poulton|C|2020
-Learning React|Alex Banks, Eve Porcello|C|2020
-Node.js Design Patterns|Mario Casciaro|C|2020
-The Rust Programming Language|Steve Klabnik, Carol Nichols|C|2019
-The Go Programming Language|Alan Donovan, Brian Kernighan|C|2015
-Test-Driven Development: By Example|Kent Beck|C|2002
-Extreme Programming Explained|Kent Beck|C|2004
-Peopleware|Tom DeMarco, Timothy Lister|C|2013
-Calculus: Early Transcendentals|Howard Anton|M|2012
-Differential Equations|Dennis Zill|M|2016
-Complex Analysis|Elias Stein, Rami Shakarchi|M|2003
-Topology|James Munkres|M|2000
-Introduction to Linear Algebra|Gilbert Strang|M|2016
-Mathematical Methods in the Physical Sciences|Mary Boas|M|2005
-Probability Theory: The Logic of Science|E. T. Jaynes|M|2003
-Statistics|David Freedman et al.|M|2007
-The Art of Statistics|David Spiegelhalter|M|2019
-Naked Statistics|Charles Wheelan|M|2013
-Prime Obsession|John Derbyshire|M|2003
-The Man Who Knew Infinity|Robert Kanigel|M|1991
-Euclid’s Elements|Euclid|M|2002
-Flatland|Edwin Abbott|M|1884
-Lab Girl|Hope Jahren|S|2016
-The Hot Zone|Richard Preston|S|1994
-Surely You’re Joking, Mr. Feynman!|Richard Feynman|S|1985
-Microbiology: An Introduction|Gerard Tortora|S|2018
-Principles of Anatomy and Physiology|Gerard Tortora|S|2017
-Genetics: From Genes to Genomes|Leland Hartwell|S|2018
-Physical Chemistry|Peter Atkins|S|2018
-Inorganic Chemistry|Gary Miessler|S|2013
-Earth: Portrait of a Planet|Stephen Marshak|S|2019
-An Immense World|Ed Yong|S|2022
-I Contain Multitudes|Ed Yong|S|2016
-The Song of the Cell|Siddhartha Mukherjee|S|2022
-Braiding Sweetgrass|Robin Wall Kimmerer|S|2013
-The Ghost Map|Steven Johnson|S|2006
-Longitude|Dava Sobel|S|1995
-The Disappearing Spoon|Sam Kean|S|2010
-The Periodic Table|Primo Levi|S|1975
-Gulp|Mary Roach|S|2013
-Spillover|David Quammen|S|2012
-The Beak of the Finch|Jonathan Weiner|S|1994
-Pale Blue Dot|Carl Sagan|Y|1994
-The Quantum Universe|Brian Cox, Jeff Forshaw|Y|2011
-Quantum Mechanics: The Theoretical Minimum|Leonard Susskind|Y|2014
-Classical Mechanics: The Theoretical Minimum|Leonard Susskind|Y|2013
-Gravitation|Charles Misner et al.|Y|1973
-Spacetime Physics|Edwin Taylor|Y|1992
-The Large Scale Structure of Space-Time|Stephen Hawking|Y|1973
-Physics of the Impossible|Michio Kaku|Y|2008
-The Fabric of the Cosmos|Brian Greene|Y|2004
-The Hidden Reality|Brian Greene|Y|2011
-Optics|Eugene Hecht|Y|2016
-Solid State Physics|Neil Ashcroft|Y|1976
-Economics in One Lesson|Henry Hazlitt|E|1946
-The Theory of Moral Sentiments|Adam Smith|E|1759
-Misbehaving|Richard Thaler|E|2015
-The Big Short|Michael Lewis|E|2010
-Liar’s Poker|Michael Lewis|E|1989
-Debt: The First 5,000 Years|David Graeber|E|2011
-Doughnut Economics|Kate Raworth|E|2017
-Development as Freedom|Amartya Sen|E|1999
-The End of Poverty|Jeffrey Sachs|E|2005
-The Bottom Billion|Paul Collier|E|2007
-Globalization and Its Discontents|Joseph Stiglitz|E|2002
-Thinking Strategically|Avinash Dixit, Barry Nalebuff|E|1991
-Economic Facts and Fallacies|Thomas Sowell|E|2008
-Principles of Microeconomics|Karl Case|E|2016
-Investments|Zvi Bodie|E|2017
-Security Analysis|Benjamin Graham, David Dodd|E|1934
-The Little Book of Common Sense Investing|John Bogle|E|2007
-Blue Ocean Strategy|W. Chan Kim|E|2005
-Crossing the Chasm|Geoffrey Moore|E|1991
-The Hard Thing About Hard Things|Ben Horowitz|E|2014
-The Interpretation of Dreams|Sigmund Freud|G|1899
-Man and His Symbols|Carl Jung|G|1964
-Behave|Robert Sapolsky|G|2017
-Why Zebras Don’t Get Ulcers|Robert Sapolsky|G|2004
-The Happiness Hypothesis|Jonathan Haidt|G|2006
-The Righteous Mind|Jonathan Haidt|G|2012
-Authentic Happiness|Martin Seligman|G|2002
-Learned Optimism|Martin Seligman|G|1990
-The Gifts of Imperfection|Brené Brown|G|2010
-Daring Greatly|Brené Brown|G|2012
-How to Win Friends and Influence People|Dale Carnegie|G|1936
-The 7 Habits of Highly Effective People|Stephen Covey|G|1989
-Lost Connections|Johann Hari|G|2018
-Social Psychology|David Myers|G|2018
-The Elements of User Experience|Jesse James Garrett|D|2010
-Sketching User Experiences|Bill Buxton|D|2007
-100 Things Every Designer Needs to Know About People|Susan Weinschenk|D|2011
-Change by Design|Tim Brown|D|2009
-Logo Design Love|David Airey|D|2014
-Designing Interfaces|Jenifer Tidwell|D|2010
-Information Architecture|Louis Rosenfeld|D|2015
-Atomic Design|Brad Frost|D|2016
-Design Systems|Alla Kholmatova|D|2017
-The Shape of Design|Frank Chimero|D|2012
-Discourse on Method|René Descartes|H|1637
-Critique of Practical Reason|Immanuel Kant|H|1788
-An Enquiry Concerning Human Understanding|David Hume|H|1748
-Two Treatises of Government|John Locke|H|1689
-The Spirit of the Laws|Montesquieu|H|1748
-Democracy in America|Alexis de Tocqueville|H|1835
-On Liberty|John Stuart Mill|H|1859
-The Communist Manifesto|Karl Marx, Friedrich Engels|H|1848
-The Second Sex|Simone de Beauvoir|H|1949
-The Origins of Totalitarianism|Hannah Arendt|H|1951
-Discipline and Punish|Michel Foucault|H|1975
-A Theory of Justice|John Rawls|H|1971
-The Peloponnesian War|Thucydides|H|1954
-The Rise and Fall of the Third Reich|William Shirer|H|1960
-The Age of Revolution|Eric Hobsbawm|H|1962
-SPQR|Mary Beard|H|2015
-Postwar|Tony Judt|H|2005
-The Black Death|Philip Ziegler|H|1969
-Emma|Jane Austen|L|1815
-Sense and Sensibility|Jane Austen|L|1811
-Middlemarch|George Eliot|L|1871
-Vanity Fair|William Makepeace Thackeray|L|1848
-David Copperfield|Charles Dickens|L|1850
-A Tale of Two Cities|Charles Dickens|L|1859
-Tess of the d’Urbervilles|Thomas Hardy|L|1891
-Heart of Darkness|Joseph Conrad|L|1899
-Mrs Dalloway|Virginia Woolf|L|1925
-To the Lighthouse|Virginia Woolf|L|1927
-A Farewell to Arms|Ernest Hemingway|L|1929
-The Sun Also Rises|Ernest Hemingway|L|1926
-The Grapes of Wrath|John Steinbeck|L|1939
-East of Eden|John Steinbeck|L|1952
-Catch-22|Joseph Heller|L|1961
-Slaughterhouse-Five|Kurt Vonnegut|L|1969
-One Flew Over the Cuckoo’s Nest|Ken Kesey|L|1962
-The Bell Jar|Sylvia Plath|L|1963
-Invisible Man|Ralph Ellison|L|1952
-The Color Purple|Alice Walker|L|1982
-The Handmaid’s Tale|Margaret Atwood|L|1985
-Neuromancer|William Gibson|L|1984
-The Left Hand of Darkness|Ursula K. Le Guin|L|1969
-Foundation|Isaac Asimov|L|1951
-I, Robot|Isaac Asimov|L|1950
-The Hitchhiker’s Guide to the Galaxy|Douglas Adams|L|1979
-Genghis Khan: His Conquests, His Empire, His Legacy|Frank McLynn|K|2015
-The Secret History of the Mongols|Anonymous|K|2004
-Bukhara: The Medieval Achievement|Richard Frye|K|1965
-The Heritage of Central Asia|Richard Frye|K|1996
-Setting the East Ablaze|Peter Hopkirk|K|1984
-Foreign Devils on the Silk Road|Peter Hopkirk|K|1980
-The Kazakhs|Martha Olcott|K|1987
-A Ride to Khiva|Fred Burnaby|K|1876
-Twenty Love Poems and a Song of Despair|Pablo Neruda|P|1924
-Gitanjali|Rabindranath Tagore|P|1910
-The Prophet|Kahlil Gibran|P|1923
-The Rubaiyat|Omar Khayyam|P|1859
-The Masnavi|Rumi|P|2004
-Beowulf|Anonymous|P|2000
-The Iliad|Homer|P|1990
-Poems|Wisława Szymborska|P|1996
-`;
-  var n3=0;
-  NEWB3.split('\n').forEach(function(ln){
-    var p=ln.trim().split('|');if(p.length<4)return;var i=n3++;
-    var m=SUBJ2[p[2]],copies=2+(i%3),r=(i*31+5)%10,pop=/[CGE]/.test(p[2])?3:1,out=r<pop?copies:(r<pop+2?1:0),left=copies-out;
-    var sur=p[1].split(/,| and /)[0].trim().split(' ').pop().charAt(0).toUpperCase();
-    var b={id:600+i,t:p[0],a:p[1],s:m[0],call:m[1]+' '+(100+(i*67)%800)+' .'+sur+(1+i%9)+' '+p[3],floor:m[2],aisle:m[3][(i+1)%m[3].length],shelf:'ABCDEF'.charAt((i+1)%6),copies:copies,left:left,y:+p[3],c:PAL[(i+1)%6]};
-    if(!left)b.due=2+(i*11)%19;BOOKS.push(b);
-  });
-  function byId(id){return BOOKS.filter(function(b){return b.id===id})[0]}
-
-  var state={view:'find',subject:'All',q:'',avail:false,history:[],limit:12,sel:1,floor:2,loans:[],holds:[],rooms:[],day:0,pick:null,scanned:false,note:''};
-  
-
-  var $=function(id){return document.getElementById(id)};
-
-  /* ---------- navigation ---------- */
-  function setView(v){
-    state.view=v;
-    document.querySelectorAll('[data-pane]').forEach(function(p){p.hidden=(p.id!=='v-'+v)});
-    document.querySelectorAll('nav button').forEach(function(b){
-      if(b.dataset.view===v)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
-    try{history.replaceState(null,'','#'+v)}catch(e){}
-    window.scrollTo(0,0);
-    render();
-  }
-  document.querySelector('nav').addEventListener('click',function(e){
-    var b=e.target.closest('button[data-view]');if(b)setView(b.dataset.view)});
-
-  /* ---------- find ---------- */
-  function filtered(){
-    var q=state.q.trim().toLowerCase();
-    return BOOKS.slice().sort(function(x,y){return x.t.localeCompare(y.t)}).filter(function(b){
-      if(state.subject!=='All'&&b.s!==state.subject)return false;
-      if(state.avail&&b.left===0)return false;
-      if(!q)return true;
-      return (b.t+' '+b.a+' '+b.s+' '+b.call).toLowerCase().indexOf(q)>-1});
-  }
-  function renderChips(){
-    $('chips').innerHTML=SUBJECTS.map(function(s){
-      return '<button class="chip" data-s="'+esc(s)+'" aria-pressed="'+(state.subject===s)+'">'+esc(s)+'</button>'}).join('')+'<button class="chip" data-avail aria-pressed="'+state.avail+'">Available now</button>';
-  }
-  function initials(t){var w=t.replace(/[^A-Za-z0-9 ]/g,'').split(/\s+/).filter(function(x){return x.length>2&&!/^(the|and|for)$/i.test(x)});return (w[0]||t).charAt(0)+(w[1]||'').charAt(0)}
-  function renderResults(){
-    var list=filtered(),total=list.length;
-    if(!list.length){$('resCount').textContent='0 titles';$('results').innerHTML='<div class="empty">No matches for “'+esc(state.q)+'”. Try an author’s surname or part of a call number such as QA76.</div>';return}
-    list=list.slice(0,state.limit);$('results').innerHTML=list.map(function(b){
-      var out=b.left===0;
-      var mine=state.loans.some(function(l){return l.id===b.id});
-      var st=mine?'<span class="status ok">On your account</span>':
-        out?'<span class="status out">Due back '+fmt(addDays(b.due))+'</span>':
-        '<span class="status ok">'+b.left+' of '+b.copies+' on shelf</span>';
-      return '<button class="entry" data-id="'+b.id+'" aria-selected="'+(state.sel===b.id)+'">'+
-        '<span class="cover" aria-hidden="true" style="background:'+b.c+'"><b>'+esc(initials(b.t))+'</b><i>'+esc(b.s.slice(0,3).toUpperCase())+'</i></span>'+
-        '<span><h3>'+esc(b.t)+'</h3><div class="by">'+esc(b.a)+', '+b.y+'</div>'+
-        '<div class="meta"><span class="tag" data-s="'+esc(b.s)+'">'+esc(b.s)+'</span><span class="mono">'+esc(b.call)+'</span><span>Floor '+b.floor+', aisle '+b.aisle+'</span></div></span>'+
-        '<span>'+st+'</span></button>'}).join('')+(total>list.length?'<button class="btn ghost" data-more style="margin-top:16px;align-self:flex-start">Show '+Math.min(12,total-list.length)+' more</button>':'');$('resCount').textContent=total+' title'+(total===1?'':'s');
-  }
-  function renderFloors(){
-    $('floors').innerHTML=[1,2,3].map(function(f){
-      return '<button data-f="'+f+'" aria-pressed="'+(state.floor===f)+'">Floor '+f+'</button>'}).join('');
-  }
-  var COLW=70, X0=50;
-  function aisleBox(n){
-    var i=(n-1)%12, row=i<6?0:1, col=i%6;
-    return {x:X0+col*COLW,y:row?190:30,w:52,h:90,row:row,col:col,cx:X0+col*COLW+26};
-  }
-  function renderMap(){
-    var b=byId(state.sel), f=state.floor, svg='';
-    svg+='<rect class="fixed" x="1" y="1" width="438" height="318" rx="4"/>';
-    for(var k=1;k<=12;k++){
-      var n=(f-1)*12+k, a=aisleBox(n), on=b&&b.floor===f&&b.aisle===n;
-      svg+='<rect class="sh s'+(k%6)+(on?' on':'')+'" x="'+a.x+'" y="'+a.y+'" width="'+a.w+'" height="'+a.h+'" rx="2"/>'+
-           '<text x="'+a.cx+'" y="'+(a.y+a.h/2+4)+'">'+n+'</text>';
-    }
-    svg+='<text class="lbl" x="22" y="140" style="text-anchor:middle" transform="rotate(-90 22 140)">Entrance</text>';
-    svg+='<path class="fixed" d="M404 130 h28 v60 h-28z"/><text class="lbl" x="418" y="164">Stairs</text>';
-    if(b&&b.floor===f){
-      var a=aisleBox(b.aisle), ey=a.row?190:120;
-      svg+='<path class="route" d="M10 155 H'+a.cx+' V'+(a.row?ey+6:ey-6)+'"/>';
-      svg+='<circle class="you" cx="10" cy="155" r="5"/>';
-    }else{svg+='<circle class="you" cx="10" cy="155" r="5"/>'}
-    $('map').innerHTML=svg;
-    var w=$('where');
-    if(!b){w.innerHTML='';return}
-    $('planTitle').textContent=b.t;
-    var here=b.floor===f;
-    w.innerHTML='<dl><dt>Call number</dt><dd class="mono">'+esc(b.call)+'</dd><dt>Location</dt><dd>Floor '+b.floor+', aisle '+b.aisle+', shelf '+b.shelf+'</dd>'+
-      '<dt>Availability</dt><dd>'+(b.left?b.left+' of '+b.copies+' copies on shelf':'All copies on loan, back by '+fmt(addDays(b.due)))+'</dd></dl>'+
-      (here?'':'<p style="color:var(--muted);margin:10px 0 0">This book is on floor '+b.floor+'. <button class="chip" data-f="'+b.floor+'">Show floor '+b.floor+'</button></p>')+
-      '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">'+
-      (b.left?'<span style="color:var(--muted);align-self:center">Take it to a self-checkout desk.</span>':
-        (state.holds.indexOf(b.id)>-1?'<button class="btn ghost" disabled>Hold placed</button>':'<button class="btn" data-hold="'+b.id+'">Place a hold</button>'))+
-      '</div>';
-  }
-
-  $('chips').addEventListener('click',function(e){if(e.target.closest('[data-avail]')){state.avail=!state.avail;state.limit=12;renderChips();renderResults();return}var c=e.target.closest('[data-s]');if(!c)return;state.subject=c.dataset.s;state.limit=12;renderChips();renderResults()});
-  $('q').addEventListener('input',function(e){state.q=e.target.value;state.limit=12;renderResults()});
-  $('searchForm').addEventListener('submit',function(e){e.preventDefault()});
-  $('results').addEventListener('click',function(e){
-    if(e.target.closest('[data-more]')){state.limit+=12;renderResults();return}var r=e.target.closest('[data-id]');if(!r)return;
-    state.sel=+r.dataset.id;state.floor=byId(state.sel).floor;renderResults();renderFloors();renderMap()});
-  $('floors').addEventListener('click',function(e){var f=e.target.closest('[data-f]');if(!f)return;state.floor=+f.dataset.f;renderFloors();renderMap()});
-  $('where').addEventListener('click',function(e){
-    var f=e.target.closest('[data-f]');if(f){state.floor=+f.dataset.f;renderFloors();renderMap();return}
-    var h=e.target.closest('[data-hold]');if(h){if(needAuth($('where')))return;state.holds.push(+h.dataset.hold);logEv('Hold placed: '+byId(+h.dataset.hold).t);renderMap();updateCount()}});
-
-  /* ---------- spaces ---------- */
-  var ROOMS=[
-    {id:'R1',n:'Room 3.01',d:'Seats 4, whiteboard',f:3},
-    {id:'R2',n:'Room 3.02',d:'Seats 4, display screen',f:3},
-    {id:'R3',n:'Room 3.05',d:'Seats 8, display screen, whiteboard',f:3},
-    {id:'R4',n:'Quiet pod 2.A',d:'Seats 1, silent floor',f:2},
-    {id:'R5',n:'Quiet pod 2.B',d:'Seats 1, silent floor',f:2}
-  ];
-  var HOURS=[9,10,11,12,13,14,15,16,17,18,19];
-  function mineAt(rid,date,h){return Booking.mine().some(function(x){return x.room===rid&&x.date===date&&x.start<=h&&h<x.end})}
-  function renderDays(){
-    var out='';
-    for(var i=0;i<5;i++){out+='<button class="chip" data-day="'+i+'" aria-pressed="'+(state.day===i)+'">'+(i===0?'Today':fmtLong(addDays(i)))+'</button>'}
-    $('days').innerHTML=out;
-  }
-  function renderRooms(){
-    var now=new Date().getHours();
-    $('rooms').innerHTML=ROOMS.map(function(r){
-      var s=HOURS.map(function(h){
-        var past=state.day===0&&h<=now;
-        var mine=mineAt(r.id,curDate(),h);
-        var busy=Booking.isBusy(r.id,curDate(),h)||past;
-        var sel=state.pick&&state.pick.room===r.id&&state.pick.hours.indexOf(h)>-1;
-        return '<button class="slot'+(mine?' mine':'')+'" data-room="'+r.id+'" data-h="'+h+'" '+((busy||mine)?'disabled ':'')+'aria-pressed="'+!!sel+'">'+(h<10?'0':'')+h+':00</button>'}).join('');
-      return '<div class="room"><div><h3>'+r.n+'</h3><p>'+r.d+', floor '+r.f+'</p></div><div class="slots">'+s+'</div></div>'}).join('');
-    var bar=$('spaceBar');
-    if(state.pick&&state.pick.hours.length){
-      var r=ROOMS.filter(function(x){return x.id===state.pick.room})[0], hs=state.pick.hours.slice().sort(function(a,b){return a-b});
-      bar.hidden=false;
-      $('spaceSummary').innerHTML=r.n+', '+dayLabel(curDate())+', '+hs[0]+':00 to '+(hs[hs.length-1]+1)+':00 ('+hs.length+' h)<span class="sub">'+(Booking.limits.maxHours-Booking.hoursOn(Booking.me(),curDate()))+' h left for you on this day</span>';
-    }else bar.hidden=true;
-  }
-  $('days').addEventListener('click',function(e){var d=e.target.closest('[data-day]');if(!d)return;state.day=+d.dataset.day;state.pick=null;$('spaceNote').innerHTML='';renderDays();renderRooms()});
-  $('rooms').addEventListener('click',function(e){
-    var s=e.target.closest('.slot');if(!s||s.disabled)return;
-    var room=s.dataset.room,h=+s.dataset.h;
-    $('spaceNote').innerHTML='';if(needAuth($('spaceNote')))return;
-    var left=Booking.limits.maxHours-Booking.hoursOn(Booking.me(),curDate());
-    if(left<=0){$('spaceNote').innerHTML='<div class="notice warn" role="alert">You already hold '+Booking.limits.maxHours+' h on this day. Cancel a booking in My account or choose another day.</div>';return}
-    if(!state.pick||state.pick.room!==room){state.pick={room:room,hours:[h]}}
-    else{
-      var hs=state.pick.hours, i=hs.indexOf(h);
-      if(i>-1){hs.splice(i,1)}
-      else{
-        var min=Math.min.apply(null,hs),max=Math.max.apply(null,hs);
-        if(h===min-1||h===max+1){
-          if(hs.length>=left){$('spaceNote').innerHTML='<div class="notice warn" role="alert">You can hold '+left+' more hour'+(left>1?'s':'')+' on this day (limit '+Booking.limits.maxHours+' h across all rooms).</div>'}
-          else hs.push(h)
-        }else state.pick={room:room,hours:[h]};
-      }
-    }
-    renderRooms();
-  });
-  $('confirmRoom').addEventListener('click',function(){
-    var p=state.pick;if(!p||!p.hours.length)return;
-    var hs=p.hours.slice().sort(function(a,b){return a-b}), rm=ROOMS.filter(function(x){return x.id===p.room})[0];
-    var res=Booking.create({room:p.room,date:curDate(),start:hs[0],end:hs[hs.length-1]+1});
-    if(res.ok){
-      var r=res.reservation;logEv('Room booked: '+rm.n+', '+r.date+', '+r.start+':00-'+r.end+':00 ('+r.code+')');
-      $('spaceNote').innerHTML='<div class="notice" role="status">Reserved: '+rm.n+', '+dayLabel(r.date)+', '+r.start+':00 to '+r.end+':00. Confirmation code <strong class="mono">'+r.code+'</strong>. <button class="btn ghost sm" data-goto="loans">View in My account</button></div>';
-      state.pick=null;
-    }else{
-      $('spaceNote').innerHTML='<div class="notice bad" role="alert"><strong>Could not reserve.</strong> '+esc(res.message)+'</div>';
-      if(res.code==='E_CONFLICT'||res.code==='E_PAST')state.pick=null;
-    }
-    renderRooms();updateCount();
-  });
-  $('demoRace').addEventListener('click',function(){
-    var p=state.pick;if(!p||!p.hours.length)return;
-    var hs=p.hours.slice().sort(function(a,b){return a-b});
-    Booking.injectOther(p.room,curDate(),hs[0],hs[hs.length-1]+1);
-    $('spaceNote').innerHTML='<div class="notice warn" role="status">Demo: another student has just booked this slot. Press Confirm to see how the system responds.</div>';
-  });
-  $('spaceNote').addEventListener('click',function(e){var g=e.target.closest('[data-goto]');if(g)setView(g.dataset.goto)});
-
-  /* ---------- checkout ---------- */
-  var TRAY=[3,4,10];
-  function trayFresh(){return TRAY.filter(function(id){return !state.loans.some(function(l){return l.id===id})})}
-  function renderCheckout(){
-    var t=trayFresh();
-    $('deskState').textContent=t.length?t.length+' book'+(t.length>1?'s':'')+' on the desk. Ready to read.':'The desk is empty. Put books on it to continue.';
-    $('scanBtn').disabled=!t.length;
-    if(!state.scanned||!t.length){ if(!t.length&&state.scanned){} else {$('scanOut').innerHTML=state.checkoutNote||''} ; if(!state.scanned)return}
-  }
-  function renderScan(){
-    var t=trayFresh();
-    $('scanOut').innerHTML='<div class="tablewrap"><table><thead><tr><th>Title</th><th>Tag</th><th>Due</th></tr></thead><tbody>'+
-      t.map(function(id){var b=byId(id);return '<tr><td><strong style="font-family:var(--f-title)">'+esc(b.t)+'</strong><div style="color:var(--muted);font-size:13px">'+esc(b.a)+'</div></td><td class="mono">E280 1160 '+(6000+id*137)+'</td><td class="num">'+fmt(addDays(21))+'</td></tr>'}).join('')+
-      '</tbody></table></div><div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn" id="borrowBtn">Borrow '+t.length+' book'+(t.length>1?'s':'')+'</button><span style="color:var(--muted)">Loan period is 21 days.</span></div>';
-  }
-  $('scanBtn').addEventListener('click',function(){
-    var b=$('scanBtn');b.disabled=true;b.textContent='Reading…';$('scanOut').innerHTML='';
-    setTimeout(function(){b.textContent='Read tags';b.disabled=false;state.scanned=true;state.checkoutNote='';renderScan()},800);
-  });
-  $('scanOut').addEventListener('click',function(e){
-    if(!e.target.closest('#borrowBtn'))return;
-    if(needAuth($('loanNote2')))return;
-    var t=trayFresh();logEv('Borrowed '+t.length+' book(s) by RFID');
-    t.forEach(function(id){state.loans.push({id:id,due:addDays(21),renewed:0});POPX[id]=(POPX[id]||0)+1;var bk=byId(id);bk.left=Math.max(0,bk.left-1)});
-    state.scanned=false;
-    $('scanOut').innerHTML='<div class="notice">'+t.length+' book'+(t.length>1?'s':'')+' borrowed. Due back '+fmt(addDays(21))+'. A receipt is on your account page.</div>';
-    $('scanBtn').disabled=true;$('deskState').textContent='The desk is empty. Put books on it to continue.';
-    updateCount();
-  });
-
-  /* ---------- loans ---------- */
-  function renderLoans(){
-    if(!session)$('loanNote').innerHTML='<div class="notice warn">You are not signed in. <button class="btn ghost sm" data-goto="profile">Sign in</button></div>';
-    var al=state.loans.map(function(l){return{b:byId(l.id),d:Math.round((l.due-addDays(0))/DAY)}}).filter(function(x){return x.d<=5});
-    $('loanAlert').innerHTML=al.length?'<div class="notice warn" role="alert"><strong>Heads up.</strong> '+al.map(function(x){return esc(x.b.t)+(x.d<0?' is overdue by '+(-x.d)+' d (est. fine '+(-x.d*100)+' KZT)':x.d===0?' is due today':' is due in '+x.d+' d')}).join('; ')+'. Renew below to avoid fines.</div>':'';
-    var rows=state.loans.map(function(l,i){
-      var b=byId(l.id), days=Math.round((l.due-addDays(0))/DAY);
-      var soon=days<=5;
-      return '<tr><td><strong style="font-family:var(--f-title)">'+esc(b.t)+'</strong><div class="mono" style="color:var(--muted)">'+esc(b.call)+'</div></td>'+
-        '<td class="num"><span class="'+(soon?'due-soon':'')+'">'+fmt(l.due)+'</span><div style="color:var(--muted);font-size:13px">'+days+' days left</div></td>'+
-        '<td>'+(l.renewed>=2?'<span style="color:var(--muted)">Renewal limit reached</span>':'<button class="btn ghost sm" data-renew="'+i+'">Renew 14 days</button>')+'</td></tr>'}).join('');
-    $('loanTable').innerHTML=state.loans.length?'<table><thead><tr><th>Title</th><th>Due</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>':'<div class="empty">Nothing on loan. Use self-checkout to borrow books.</div>';
-    var rr=state.holds.map(function(id){var b=byId(id);return '<tr><td><strong style="font-family:var(--f-title)">'+esc(b.t)+'</strong></td><td>Hold, you are next in line</td><td><button class="btn ghost sm" data-unhold="'+id+'">Cancel hold</button></td></tr>'}).join('')+
-      Booking.mine().map(function(r){var rm=ROOMS.filter(function(x){return x.id===r.room})[0];return '<tr><td><strong>'+rm.n+'</strong><div class="mono" style="color:var(--muted)">'+r.code+'</div></td><td class="num">'+fmtLong(new Date(r.date+'T00:00:00'))+', '+r.start+':00 to '+r.end+':00</td><td><button class="btn ghost sm" data-cancelroom="'+r.id+'">Cancel</button></td></tr>'}).join('');
-    $('resTable').innerHTML=rr?'<table><thead><tr><th>Item</th><th>Details</th><th></th></tr></thead><tbody>'+rr+'</tbody></table>':'<div class="empty">No holds or room reservations. Place a hold from the catalog, or book a study room.</div>';
-  }
-  $('v-loans').addEventListener('click',function(e){
-    var r=e.target.closest('[data-renew]');
-    if(r){var l=state.loans[+r.dataset.renew];logEv('Renewed: '+byId(l.id).t);l.due=new Date(l.due.getTime()+14*DAY);l.renewed++;$('loanNote').innerHTML='<div class="notice">Renewed. New due date: '+fmt(l.due)+'.</div>';renderLoans();updateCount();return}
-    var u=e.target.closest('[data-unhold]');
-    if(u){state.holds=state.holds.filter(function(x){return x!==+u.dataset.unhold});renderLoans();updateCount();return}
-    var gp=e.target.closest('[data-goto]');if(gp){setView(gp.dataset.goto);return}
-    var c=e.target.closest('[data-cancelroom]');
-    if(c){var res=Booking.cancel(c.dataset.cancelroom);if(res.ok)logEv('Booking cancelled');$('loanNote').innerHTML=res.ok?'<div class="notice" role="status">Reservation cancelled. The room is free again.</div>':'<div class="notice bad" role="alert">'+esc(res.message)+'</div>';renderLoans();updateCount()}
-  });
-  function updateCount(){
-    persist();
-    var n=state.loans.length+state.holds.length+Booking.mine().length, el=$('loanCount');
-    el.hidden=!n;el.textContent=n;
-  }
-
-
-  /* ---------- accounts, profile, persistence ---------- */
-  var USERS_KEY='auralib.users.v1',SES_KEY='auralib.session.v1',session=null,authTab='login',fails=0,lockUntil=0,profNote='';
-  function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-  function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-  function users(){return lsGet(USERS_KEY,[])}
-  function hashPw(pw,salt){
-    var t=salt+':'+pw;
-    if(window.crypto&&crypto.subtle&&window.TextEncoder)
-      return crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)).then(function(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return('0'+x.toString(16)).slice(-2)}).join('')});
-    var h=5381;for(var i=0;i<t.length;i++)h=((h*33)^t.charCodeAt(i))>>>0;return Promise.resolve('d'+h.toString(16));
-  }
-  function makeUser(o){var salt=Math.random().toString(36).slice(2);return hashPw(o.pw,salt).then(function(h){return{id:o.id,name:o.name,email:o.email.toLowerCase(),role:'student',salt:salt,hash:h,created:new Date().toISOString()}})}
-  function checkName(n){return n.trim().length<2?'Enter your full name (at least 2 characters).':''}
-  function checkEmail(m){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m.trim())?'':'Enter a valid email, for example name@astanait.edu.kz.'}
-  function checkPw(p){return (p.length<8||!/[A-Za-z]/.test(p)||!/\d/.test(p))?'Password must be at least 8 characters and contain a letter and a digit.':''}
-  function notice(t,bad){return '<div class="notice'+(bad?' bad':'')+'" role="'+(bad?'alert':'status')+'">'+esc(t)+'</div>'}
-  function dkey(){return 'auralib.data.v1.'+session.id}
-  function persist(){if(!session)return;lsSet(dkey(),{loans:state.loans.map(function(l){return{id:l.id,due:l.due.toISOString(),renewed:l.renewed}}),holds:state.holds,history:state.history})}
-  function loadData(){
-    var d=session?lsGet(dkey(),null):null;
-    if(!d&&session&&session.id==='24-1187')d={loans:[{id:4,due:addDays(5).toISOString(),renewed:0},{id:9,due:addDays(18).toISOString(),renewed:0}],holds:[],history:[]};
-    d=d||{loans:[],holds:[],history:[]};
-    state.loans=d.loans.map(function(l){return{id:l.id,due:new Date(l.due),renewed:l.renewed}});state.holds=d.holds||[];state.history=d.history||[];
-  }
-  function logEv(t){if(!session)return;state.history.unshift({t:new Date().toISOString(),x:t});state.history=state.history.slice(0,30)}
-  function syncNav(){$('navProfile').textContent=session?session.name.split(' ')[0]:'Sign in';updateCount()}
-  function signIn(u){session=u;lsSet(SES_KEY,u.id);Booking.setUser(u.id);loadData();state.pick=null;syncNav()}
-  function signOut(){persist();session=null;try{localStorage.removeItem(SES_KEY)}catch(e){}Booking.setUser(null);state.loans=[];state.holds=[];state.history=[];state.pick=null;syncNav()}
-  function needAuth(el){if(session)return false;el.innerHTML='<div class="notice warn" role="alert">Please sign in first. <button class="btn ghost sm" data-goto="profile">Sign in</button></div>';return true}
-  function fld(id,label,type,extra,hint){return '<div class="fld"><label for="'+id+'">'+label+'</label><input id="'+id+'" name="'+id+'" type="'+type+'" '+(extra||'')+'>'+(hint?'<small>'+hint+'</small>':'')+'</div>'}
-  function renderProfile(){
-    var el=$('profileBox'),h='';
-    if(!session){
-      h='<div class="authtabs" role="group"><button class="chip" data-tab="login" aria-pressed="'+(authTab==='login')+'">Sign in</button><button class="chip" data-tab="reg" aria-pressed="'+(authTab==='reg')+'">Register</button></div>'+profNote;
-      if(authTab==='login')h+='<form class="authform" id="fLogin" novalidate>'+fld('lEmail','Email','email','autocomplete="username"')+fld('lPw','Password','password','autocomplete="current-password"')+'<div class="prow"><button class="btn" type="submit">Sign in</button><button class="btn ghost" type="button" data-demo>Use demo account</button></div></form>';
-      else h+='<form class="authform" id="fReg" novalidate>'+fld('rName','Full name','text','autocomplete="name"')+fld('rEmail','University email','email','autocomplete="email"')+fld('rId','Student ID','text','placeholder="24-1187" inputmode="numeric"','Format: YY-NNNN')+fld('rPw','Password','password','autocomplete="new-password"','At least 8 characters, a letter and a digit')+fld('rPw2','Repeat password','password','autocomplete="new-password"')+'<button class="btn" type="submit">Create account</button></form>';
-      el.innerHTML=h;return;
-    }
-    var today=Booking.iso(new Date());
-    h=profNote+'<h2>'+esc(session.name)+'</h2><p style="color:var(--muted);margin:4px 0 0">Student ID '+esc(session.id)+' · '+esc(session.email)+' · member since '+fmt(new Date(session.created))+'</p>'+
-      '<div class="stats"><div class="stat"><b>'+state.loans.length+'</b><span>On loan</span></div><div class="stat"><b>'+state.holds.length+'</b><span>Holds</span></div><div class="stat"><b>'+Booking.mine().length+'</b><span>Room bookings</span></div><div class="stat"><b>'+Booking.hoursOn(session.id,today)+' / '+Booking.limits.maxHours+'</b><span>Room hours today</span></div></div>'+
-      '<h3>Edit profile</h3><form class="authform" id="fEdit" novalidate>'+fld('eName','Full name','text','value="'+esc(session.name)+'"')+fld('eEmail','Email','email','value="'+esc(session.email)+'"')+'<button class="btn" type="submit">Save changes</button></form>'+
-      '<h3>Change password</h3><form class="authform" id="fPw" novalidate>'+fld('pOld','Current password','password','autocomplete="current-password"')+fld('pNew','New password','password','autocomplete="new-password"')+'<button class="btn" type="submit">Update password</button></form>'+
-      '<h3>Activity history</h3>'+(state.history.length?'<div class="tablewrap"><table><tbody>'+state.history.slice(0,10).map(function(x){var d=new Date(x.t);return '<tr><td class="num">'+fmt(d)+' '+d.toTimeString().slice(0,5)+'</td><td>'+esc(x.x)+'</td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty">No activity yet. Book a room or place a hold.</div>')+
-      '<div class="prow" style="margin-top:20px"><button class="btn" data-logout>Sign out</button><button class="btn ghost" data-delacc>Delete account</button></div>';
-    el.innerHTML=h;
-  }
-  function find(id){return users().filter(function(u){return u.id===id})[0]}
-  $('profileBox').addEventListener('click',function(e){
-    var t=e.target.closest('[data-tab]');if(t){authTab=t.dataset.tab;profNote='';renderProfile();return}
-    if(e.target.closest('[data-demo]')){$('lEmail').value='amira@astanait.edu.kz';$('lPw').value='Demo1234';return}
-    if(e.target.closest('[data-logout]')){signOut();profNote=notice('You have signed out.');authTab='login';renderProfile();return}
-    if(e.target.closest('[data-delacc]')){
-      if(!confirm('Delete your account and all its bookings? This cannot be undone.'))return;
-      var id=session.id;Booking.dropUser(id);lsSet(USERS_KEY,users().filter(function(u){return u.id!==id}));try{localStorage.removeItem(dkey())}catch(x){}
-      session=null;try{localStorage.removeItem(SES_KEY)}catch(x){}Booking.setUser(null);state.loans=[];state.holds=[];state.history=[];syncNav();profNote=notice('Account deleted.');renderProfile()}
-  });
-  $('profileBox').addEventListener('submit',function(e){
-    e.preventDefault();var id=e.target.id,v=function(i){return $(i).value},er='',all=users();
-    if(id==='fLogin'){
-      if(Date.now()<lockUntil){profNote=notice('Too many attempts. Try again in '+Math.ceil((lockUntil-Date.now())/1000)+' s.',1);renderProfile();return}
-      if(!v('lEmail').trim()||!v('lPw')){profNote=notice('Enter your email and password.',1);renderProfile();return}
-      var u=all.filter(function(x){return x.email===v('lEmail').trim().toLowerCase()})[0];
-      (u?hashPw(v('lPw'),u.salt):Promise.resolve(null)).then(function(hh){
-        if(u&&hh===u.hash){fails=0;profNote=notice('Welcome back, '+u.name.split(' ')[0]+'.');signIn(u);renderProfile()}
-        else{fails++;if(fails>=5){lockUntil=Date.now()+30000;fails=0}profNote=notice('Incorrect email or password.',1);renderProfile()}});
-      return}
-    if(id==='fReg'){
-      er=checkName(v('rName'))||checkEmail(v('rEmail'))||(/^\d{2}-\d{4}$/.test(v('rId').trim())?'':'Student ID must look like 24-1187.')||checkPw(v('rPw'))||(v('rPw')!==v('rPw2')?'Passwords do not match.':'');
-      if(!er&&all.some(function(x){return x.email===v('rEmail').trim().toLowerCase()}))er='An account with this email already exists. Sign in instead.';
-      if(!er&&find(v('rId').trim()))er='This student ID is already registered.';
-      if(er){profNote=notice(er,1);renderProfile();return}
-      makeUser({id:v('rId').trim(),name:v('rName').trim(),email:v('rEmail').trim(),pw:v('rPw')}).then(function(nu){all.push(nu);lsSet(USERS_KEY,all);signIn(nu);logEv('Account created');profNote=notice('Account created. You are signed in.');renderProfile()});return}
-    if(id==='fEdit'){
-      er=checkName(v('eName'))||checkEmail(v('eEmail'));
-      if(!er&&all.some(function(x){return x.id!==session.id&&x.email===v('eEmail').trim().toLowerCase()}))er='This email belongs to another account.';
-      if(er){profNote=notice(er,1);renderProfile();return}
-      all.forEach(function(x){if(x.id===session.id){x.name=v('eName').trim();x.email=v('eEmail').trim().toLowerCase();session=x}});
-      lsSet(USERS_KEY,all);logEv('Profile updated');syncNav();profNote=notice('Profile saved.');renderProfile();return}
-    if(id==='fPw'){
-      er=checkPw(v('pNew'));if(er){profNote=notice(er,1);renderProfile();return}
-      hashPw(v('pOld'),session.salt).then(function(hh){
-        if(hh!==session.hash){profNote=notice('Current password is incorrect.',1);renderProfile();return}
-        hashPw(v('pNew'),session.salt).then(function(nh){all.forEach(function(x){if(x.id===session.id){x.hash=nh;session=x}});lsSet(USERS_KEY,all);logEv('Password changed');profNote=notice('Password updated.');renderProfile()})});
-    }
-  });
-  function initAuth(){
-    var seed=users().length?Promise.resolve():makeUser({id:'24-1187',name:'Amira Seitkali',email:'amira@astanait.edu.kz',pw:'Demo1234'}).then(function(u){lsSet(USERS_KEY,[u])});
-    return seed.then(function(){var id=lsGet(SES_KEY,null),u=id&&find(id);if(u)signIn(u);else syncNav()});
-  }
-
-
-  /* ---------- A4: SMART PLANNER (rule-based recommender) ---------- */
-  var RINFO={R1:{cap:4,wb:1},R2:{cap:4,scr:1},R3:{cap:8,wb:1,scr:1},R4:{cap:1,sil:1},R5:{cap:1,sil:1}};
-  var PARTS={any:[9,20,'Any time'],morning:[9,12,'Morning'],afternoon:[12,17,'Afternoon'],evening:[17,20,'Evening']};
-  var NEEDS={wb:'Whiteboard',scr:'Screen',sil:'Silent'};
-  var sp={n:2,dur:2,day:0,part:'any',need:[],msg:'',out:[]};
-  function ownAt(date,h){return Booking.mine().some(function(x){return x.date===date&&x.start<=h&&h<x.end})}
-  /* INPUT: group size, hours, day, time of day, needs  ->  RULES + SCORE  ->  RESULT: top 3 slots or a warning */
-  function recommend(p){
-    var date=Booking.iso(addDays(p.day)),nowH=new Date().getHours(),list=[];
-    var rest=Booking.limits.maxHours-(session?Booking.hoursOn(session.id,date):0);
-    if(p.n>8)return{list:list,why:'No room seats more than 8 people. Split the group in two.'};
-    if(p.dur>rest)return{list:list,why:'Daily limit: you have only '+rest+' h left on that day. Pick a shorter session or another day.'};
-    ROOMS.forEach(function(r){
-      var c=RINFO[r.id];if(c.cap<p.n)return;
-      for(var s=9;s+p.dur<=20;s++){
-        var ok=true,crowd=0,h;
-        for(h=s;h<s+p.dur;h++){
-          if(Booking.isBusy(r.id,date,h)||(p.day===0&&h<=nowH)||ownAt(date,h)){ok=false;break}
-          crowd+=ROOMS.filter(function(x){return Booking.isBusy(x.id,date,h)}).length;
-        }
-        if(!ok)continue;
-        var sc=100-(c.cap-p.n)*5-crowd/p.dur*4,why=[],pr=PARTS[p.part];
-        Object.keys(NEEDS).forEach(function(k){if(p.need.indexOf(k)>-1){if(c[k]){sc+=15;why.push(NEEDS[k].toLowerCase())}else sc-=20}});
-        if(s>=pr[0]&&s+p.dur<=pr[1]){if(p.part!=='any'){sc+=10;why.push(pr[2].toLowerCase())}}else sc-=10;
-        if(c.cap-p.n<=1)why.push('right size');
-        if(crowd/p.dur<=1)why.push('quiet hour');
-        list.push({room:r,s:s,e:s+p.dur,date:date,score:Math.round(sc),why:why});
-      }
-    });
-    list.sort(function(a,b){return b.score-a.score});
-    return{list:list.slice(0,3),why:list.length?'':'Nothing is free for these settings. Try another day or a shorter session.'};
-  }
-  /* INPUT: your loans and holds  ->  count subjects  ->  RESULT: available titles in the subjects you read */
-  function recBooks(){
-    var cnt={},seen={};
-    state.loans.forEach(function(l){var b=byId(l.id);cnt[b.s]=(cnt[b.s]||0)+2;seen[l.id]=1});
-    state.holds.forEach(function(id){var b=byId(id);cnt[b.s]=(cnt[b.s]||0)+1;seen[id]=1});
-    var pers=Object.keys(cnt).length>0;
-    var l=BOOKS.filter(function(b){return !seen[b.id]&&b.left>0}).map(function(b){
-      return{b:b,sc:pers?(cnt[b.s]||0)*10+(b.y>=2010?2:0):(b.copies-b.left)*10+b.copies,why:pers?'Because you read '+b.s:'Popular on campus'}});
-    if(pers)l=l.filter(function(x){return x.sc>=10});
-    return{pers:pers,list:l.sort(function(a,b){return b.sc-a.sc}).slice(0,4)};
-  }
-  function chipset(k,opts,cur,multi){return opts.map(function(o){var on=multi?cur.indexOf(o[0])>-1:cur===o[0];return '<button class="chip" data-sp="'+k+'" data-v="'+o[0]+'" aria-pressed="'+on+'">'+o[1]+'</button>'}).join('')}
-  function renderSmart(){
-    var days=[0,1,2,3,4].map(function(i){return[i,i===0?'Today':fmtLong(addDays(i))]});
-    var parts=Object.keys(PARTS).map(function(k){return[k,PARTS[k][2]]}),needs=Object.keys(NEEDS).map(function(k){return[k,NEEDS[k]]});
-    var R=recommend(sp);sp.out=R.list;
-    var h='<div class="hero c-mint"><h1>Smart planner.</h1></div><p class="lede">Set what you need. AuraLib scores every room and hour by size, equipment, crowding and your daily limit, and suggests books from the subjects you already read.</p>'+sp.msg+
-      '<h2>Best study room for you</h2><p style="margin:0 0 6px"><b>People</b></p><div class="chips">'+chipset('n',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[6,'5–6'],[8,'7–8']],sp.n)+'</div>'+
-      '<p style="margin:0 0 6px"><b>Length</b></p><div class="chips">'+chipset('dur',[[1,'1 h'],[2,'2 h'],[3,'3 h']],sp.dur)+'</div>'+
-      '<p style="margin:0 0 6px"><b>Day</b></p><div class="chips">'+chipset('day',days,sp.day)+'</div>'+
-      '<p style="margin:0 0 6px"><b>Time of day</b></p><div class="chips">'+chipset('part',parts,sp.part)+'</div>'+
-      '<p style="margin:0 0 6px"><b>Must have</b></p><div class="chips">'+chipset('need',needs,sp.need,true)+'</div>';
-    h+=R.list.length?'<div class="tablewrap"><table><tbody>'+R.list.map(function(x,i){return '<tr><td><strong>'+x.room.n+'</strong>'+(i===0?' <span class="status ok">Best match</span>':'')+'<div style="color:var(--muted);font-size:13px">'+x.room.d+'</div></td><td class="num">'+dayLabel(x.date)+', '+x.s+':00 to '+x.e+':00</td><td>Score '+x.score+'<div style="color:var(--muted);font-size:13px">'+esc(x.why.join(', '))+'</div></td><td><button class="btn sm" data-sbook="'+i+'">Book</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="notice warn" role="alert">'+esc(R.why)+'</div>';
-    var B=recBooks();
-    h+='<h2 style="margin-top:32px">Books for you</h2><p class="lede" style="margin-bottom:12px">'+(B.pers?'Based on your loans and holds.':'Sign in and borrow or place a hold to get personal picks. Until then: popular titles that are on the shelf.')+'</p>'+
-      (B.list.length?'<div class="tablewrap"><table><tbody>'+B.list.map(function(x){return '<tr><td><strong style="font-family:var(--f-title)">'+esc(x.b.t)+'</strong><div style="color:var(--muted);font-size:13px">'+esc(x.b.a)+'</div></td><td>'+esc(x.why)+'<div style="color:var(--muted);font-size:13px">Floor '+x.b.floor+', aisle '+x.b.aisle+'</div></td><td><button class="btn ghost sm" data-find="'+x.b.id+'">Show on map</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty">No available titles match yet.</div>');
-    $('smartBox').innerHTML=h;
-  }
-  $('smartBox').addEventListener('click',function(e){
-    var c=e.target.closest('[data-sp]');
-    if(c){var k=c.dataset.sp,v=c.dataset.v;if(k==='need'){var i=sp.need.indexOf(v);if(i>-1)sp.need.splice(i,1);else sp.need.push(v)}else if(k==='part')sp.part=v;else sp[k]=+v;sp.msg='';renderSmart();return}
-    var g=e.target.closest('[data-goto]');if(g){setView(g.dataset.goto);return}
-    var f=e.target.closest('[data-find]');if(f){state.sel=+f.dataset.find;state.floor=byId(state.sel).floor;setView('find');return}
-    var b=e.target.closest('[data-sbook]');if(!b)return;
-    if(!session){sp.msg='<div class="notice warn" role="alert">Please sign in first. <button class="btn ghost sm" data-goto="profile">Sign in</button></div>';renderSmart();return}
-    var x=sp.out[+b.dataset.sbook],res=Booking.create({room:x.room.id,date:x.date,start:x.s,end:x.e});
-    if(res.ok){logEv('Room booked (smart): '+x.room.n+', '+x.date+', '+x.s+':00-'+x.e+':00 ('+res.reservation.code+')');sp.msg='<div class="notice" role="status">Booked '+x.room.n+', '+dayLabel(x.date)+', '+x.s+':00 to '+x.e+':00. Code <strong class="mono">'+res.reservation.code+'</strong>.</div>'}
-    else sp.msg='<div class="notice bad" role="alert"><strong>Could not reserve.</strong> '+esc(res.message)+'</div>';
-    updateCount();renderSmart();
-  });
-
-  /* ---------- A4: INSIGHTS (data analysis + chart + security) ---------- */
-  var insDay=0;
-  function pct(a,b){return b?Math.round(a/b*100):0}
-  function analyse(){
-    var tc=0,tl=0,none=0,by={},date=Booking.iso(addDays(insDay));
-    BOOKS.forEach(function(b){tc+=b.copies;tl+=b.left;if(!b.left)none++;var o=by[b.s]||(by[b.s]={c:0,l:0});o.c+=b.copies;o.l+=b.left});
-    var subj=Object.keys(by).map(function(s){return{l:s,v:pct(by[s].c-by[s].l,by[s].c)}}).sort(function(a,b){return b.v-a.v});
-    var hrs=HOURS.map(function(h){return{l:(h<10?'0':'')+h+':00',v:pct(ROOMS.filter(function(r){return Booking.isBusy(r.id,date,h)}).length,ROOMS.length)}});
-    return{n:BOOKS.length,tc:tc,out:tc-tl,none:none,subj:subj,hrs:hrs,avg:Math.round(hrs.reduce(function(n,x){return n+x.v},0)/hrs.length)};
-  }
-  function hbar(rows,color,label){
-    var H=rows.length*24+26,s='<svg viewBox="0 0 440 '+H+'" style="width:100%;max-width:560px" role="img" aria-label="'+esc(label)+'">';
-    rows.forEach(function(r,i){var y=i*24+4,w=Math.round(r.v*2.4);
-      s+='<text x="0" y="'+(y+14)+'" font-size="12" fill="#141413">'+esc(r.l)+'</text><rect x="132" y="'+y+'" width="'+w+'" height="18" rx="2" fill="'+color+'"/><text x="'+(138+w)+'" y="'+(y+14)+'" font-size="12" fill="#141413">'+r.v+'%</text>'});
-    return s+'<text x="132" y="'+(H-4)+'" font-size="11" fill="#6b6a66">'+esc(label)+'</text></svg>';
-  }
-  function renderIns(){
-    var I=analyse(),top=I.subj[0],low=I.subj[I.subj.length-1],srt=I.hrs.slice().sort(function(a,b){return b.v-a.v}),pk=srt[0],qt=srt[srt.length-1];
-    var days=[0,1,2,3,4].map(function(i){return[i,i===0?'Today':fmtLong(addDays(i))]});
-    var dec=(top.v>=50?'Buy extra copies for '+top.l+' ('+I.none+' titles have no copy on the shelf). ':'Collection coverage is balanced; keep the current budget. ')+
-      (pk.v>=60?'Rooms are tight at '+pk.l+': the Smart planner should steer groups to '+qt.l+', and a sixth room is worth piloting.':'Room capacity is enough on this day.');
-    var h='<div class="hero c-sky"><h1>Library insights.</h1></div><p class="lede">All numbers below are calculated live from the catalogue and the room bookings. Catalogue availability and other students’ bookings are <b>simulated sample data</b>; your own loans and bookings are real.</p>'+
-      '<div class="stats"><div class="stat"><b>'+I.n+'</b><span>Titles</span></div><div class="stat"><b>'+pct(I.out,I.tc)+'%</b><span>Copies on loan ('+I.out+' of '+I.tc+')</span></div><div class="stat"><b>'+I.none+'</b><span>Titles with no copy on shelf</span></div><div class="stat"><b>'+I.avg+'%</b><span>Avg room occupancy</span></div></div>'+
-      '<h2>Copies on loan by subject</h2>'+hbar(I.subj,'#2F6F73','Share of copies currently on loan (%)')+
-      '<h2 style="margin-top:28px">Room occupancy by hour</h2><div class="chips">'+chipset('iday',days,insDay)+'</div>'+hbar(I.hrs,'#B88A2A','Share of the 5 rooms booked (%)')+
-      '<h2 style="margin-top:28px">What the data says</h2><div class="notice"><strong>Finding 1.</strong> '+esc(top.l)+' is the most borrowed subject ('+top.v+'% of copies out) while '+esc(low.l)+' is the least ('+low.v+'%).</div>'+
-      '<div class="notice"><strong>Finding 2.</strong> Room demand peaks at '+pk.l+' ('+pk.v+'% booked) and is lowest at '+qt.l+' ('+qt.v+'%).</div><div class="notice warn"><strong>Decision.</strong> '+esc(dec)+'</div>'+
-      '<div class="prow"><button class="btn" data-sim>Simulate a rush: 10 borrows</button> <span style="color:var(--muted)">Changes the data, charts and findings update. Reload to reset.</span></div>'+
-      '<h2 style="margin-top:32px">Security risks and plan</h2><div class="tablewrap"><table><thead><tr><th>Risk</th><th>What could go wrong</th><th>Prevention</th></tr></thead><tbody>'+
-      '<tr><td><strong>Exposed accounts</strong></td><td>Users and password hashes live in browser storage. Anyone with the device, or an XSS bug, can read them. SHA-256 is fast, so weak passwords are easy to crack.</td><td>Server database, Argon2id or bcrypt, HTTPS, HTTP-only session cookies.</td></tr>'+
-      '<tr><td><strong>Broken access control</strong></td><td>Roles and booking ownership are checked only in client JavaScript. A user can edit storage to view or cancel others’ bookings or act as a librarian.</td><td>Check the session and role on the server for every request; librarian and admin functions only for those roles.</td></tr>'+
-      '<tr><td><strong>Brute force and abuse</strong></td><td>The 30 s login lock resets when storage is cleared. Bots could flood bookings.</td><td>Server-side rate limits, CAPTCHA after failures, audit log. Names are already escaped (esc) against XSS.</td></tr></tbody></table></div>'+
-      '<div class="notice" style="margin-top:16px"><strong>Planned improvement:</strong> move accounts and bookings to a server with Argon2id hashing and server-side authorization. The browser then never holds other users’ data, so reading or editing it from the console stops working.</div>';
-    $('insBox').innerHTML=h;
-  }
-  $('insBox').addEventListener('click',function(e){
-    var c=e.target.closest('[data-sp]');if(c){insDay=+c.dataset.v;renderIns();return}
-    if(e.target.closest('[data-sim]')){BOOKS.filter(function(b){return b.left>0}).sort(function(){return Math.random()-.5}).slice(0,10).forEach(function(b){b.left--;if(!b.left)b.due=3+Math.floor(Math.random()*18)});renderIns()}
-  });
-
-
-
-  /* ---------- A4: TOP BOOKS (popularity ranking, overall and by genre) ---------- */
-  /* Popularity = loans in the last 90 days. History is simulated sample data (stable per title);
-     copies on loan right now and borrows made in this session are added on top, so the ranking moves when you borrow. */
-  var POPX={},topG='All';
-  function seedPop(b){var x=Math.imul(b.id+7,2654435761)>>>0,r=(x%1000)/1000;return 6+Math.round(r*r*54)}
-  function loans90(b){return seedPop(b)+(b.copies-b.left)+(POPX[b.id]||0)}
-  function ranked(sub){
-    return BOOKS.filter(function(b){return !sub||b.s===sub}).map(function(b){return{b:b,n:loans90(b)}})
-      .sort(function(a,c){return c.n-a.n||a.b.t.localeCompare(c.b.t)});
-  }
-  function topStatus(b){
-    if(state.loans.some(function(l){return l.id===b.id}))return '<span class="status ok">On your account</span>';
-    return b.left===0?'<span class="status out">Due back '+fmt(addDays(b.due))+'</span>':'<span class="status ok">'+b.left+' of '+b.copies+' on shelf</span>';
-  }
-  function topRow(x,i,max){
-    var b=x.b;
-    return '<div class="toprow"><span class="rank'+(i<3?' top':'')+' num" aria-label="Rank '+(i+1)+'">'+(i+1)+'</span>'+
-      '<span class="cover" aria-hidden="true" style="background:'+b.c+'"><b>'+esc(initials(b.t))+'</b><i>'+esc(b.s.slice(0,3).toUpperCase())+'</i></span>'+
-      '<span><h3>'+esc(b.t)+'</h3><div class="by">'+esc(b.a)+', '+b.y+'</div>'+
-      '<div class="meta" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px"><span class="tag" data-s="'+esc(b.s)+'">'+esc(b.s)+'</span><span>Floor '+b.floor+', aisle '+b.aisle+'</span></div>'+
-      '<div class="pbar" aria-hidden="true"><i style="width:'+Math.max(4,Math.round(x.n/max*100))+'%"></i></div></span>'+
-      '<span class="side"><span class="n num">'+x.n+' <small>loans</small></span>'+topStatus(b)+'<button class="btn ghost sm" data-find="'+b.id+'">Show on map</button></span></div>';
-  }
-  function renderTop(){
-    var genres=SUBJECTS.slice(1).filter(function(g){return BOOKS.some(function(b){return b.s===g})});
-    var all=ranked(null).slice(0,10),h='<div class="hero c-sun"><h1>Most popular books.</h1></div>'+
-      '<p class="lede">Ranked by loans in the last 90 days. Borrow a book at self-checkout and watch it climb. Loan history is <b>simulated sample data</b>; copies out now and your own borrows are counted live.</p>'+
-      '<h2>Top 10 overall</h2><div class="toplist" style="margin-bottom:36px">'+all.map(function(x,i){return topRow(x,i,all[0].n)}).join('')+'</div>'+
-      '<h2>Top books by genre</h2><div class="chips" role="group" aria-label="Genre" style="margin-top:8px">'+
-      [['All','All genres']].concat(genres.map(function(g){return[g,g]})).map(function(o){return '<button class="chip" data-tg="'+esc(o[0])+'" aria-pressed="'+(topG===o[0])+'">'+esc(o[1])+'</button>'}).join('')+'</div>';
-    if(topG==='All'){
-      h+='<div class="gengrid">'+genres.map(function(g){
-        var r=ranked(g).slice(0,3);
-        return '<div class="gencard"><h3><span class="tag" data-s="'+esc(g)+'">'+esc(g)+'</span></h3>'+
-          r.map(function(x,i){return '<div class="gl"><b>'+(i+1)+'</b><span><span class="t">'+esc(x.b.t)+'</span><div class="a">'+esc(x.b.a)+'</div></span><span class="n">'+x.n+' loans</span></div>'}).join('')+
-          '<button class="btn ghost sm" data-tg="'+esc(g)+'">See top 10</button></div>'}).join('')+'</div>';
-    }else{
-      var r=ranked(topG).slice(0,10);
-      h+='<div class="count">Top '+r.length+' in '+esc(topG)+'</div><div class="toplist">'+r.map(function(x,i){return topRow(x,i,r[0].n)}).join('')+'</div>';
-    }
-    $('topBox').innerHTML=h;
-  }
-  $('topBox').addEventListener('click',function(e){
-    var g=e.target.closest('[data-tg]');if(g){topG=g.dataset.tg;renderTop();if(g.classList.contains('btn'))window.scrollTo(0,$('topBox').querySelector('.chips').offsetTop-80);return}
-    var f=e.target.closest('[data-find]');if(f){state.sel=+f.dataset.find;state.floor=byId(state.sel).floor;setView('find')}
-  });
-
-  function render(){
-    if(state.view==='find'){renderChips();renderResults();renderFloors();renderMap()}
-    if(state.view==='spaces'){renderDays();renderRooms()}
-    if(state.view==='checkout'){renderCheckout()}
-    if(state.view==='loans'){renderLoans()}
-    if(state.view==='profile'){renderProfile()}
-    if(state.view==='smart'){renderSmart()}
-    if(state.view==='insights'){renderIns()}
-    if(state.view==='top'){renderTop()}
-  }
-  initAuth().then(function(){
-    var h=(location.hash||'').replace('#','');
-    setView(['find','top','spaces','checkout','loans','profile','smart','insights'].indexOf(h)>-1?h:'find');
-  });
-})();
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
 </body></html>
